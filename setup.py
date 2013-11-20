@@ -9,7 +9,7 @@ setup(
     author_email='calin@presslabs.com',
     url='http://github.com/PressLabs/django-payu',
     install_requires=[
-        'Django>=1.4'
+        'Django==1.4.10'
     ],
     description = 'A pluggable Django application for integrating PayU Payments (ex. ePayment)',
     packages=find_packages(),
