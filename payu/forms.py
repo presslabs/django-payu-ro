@@ -219,4 +219,5 @@ class PayULiveUpdateForm(forms.Form):
 
 class PayUIPNForm(forms.ModelForm):
     class Meta:
+        exclude = []
         model = PayUIPN
