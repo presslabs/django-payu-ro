@@ -15,14 +15,18 @@
 # 
 
 import hmac
+import hashlib
 import pytz
 from datetime import datetime
+
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+
 from payu.conf import MERCHANT_KEY
 from payu.models import PayUIPN
 from payu.forms import PayUIPNForm
+
 
 @require_POST
 @csrf_exempt
@@ -32,24 +36,25 @@ def ipn(request):
     flag = None
 
     s = ''
-    for k in ['SALEDATE','PAYMENTDATE','COMPLETE_DATE','REFNO','REFNOEXT','ORDERNO','ORDERSTATUS','PAYMETHOD','PAYMETHOD_CODE']:
-        if request.POST.has_key(k):
-            s += '%s%s' % (len(request.POST.get(k)),request.POST.get(k))
+    for key, val in request.POST.iteritems():
+        if val == 'HASH':
+            continue
+        s += '%s%s' % (len(val), val)
 
-    hash = hmac.new(MERCHANT_KEY,s).hexdigest()
-    if request.POST.get('HASH','') != hash:
-        flag = 'Invalid hash %s. Hash string \n%s' % (request.POST.get('HASH',''), s)
+    expected_hash = hmac.new(MERCHANT_KEY, s, hashlib.md5).hexdigest()
+    request_hash = request.POST.get('HASH', '')
+
+    if request_hash != expected_hash:
+        flag = 'Invalid hash %s. Hash string \n%s' % (request_hash, s)
     else:
         if ipn.is_valid():
             try:
                 #When commit = False, object is returned without saving to DB.
-                ipn_obj = ipn.save(commit = False)
+                ipn_obj = ipn.save(commit=False)
             except Exception, e:
                 flag = "Exception while processing. (%s)" % e
         else:
             flag = "Invalid form. (%s)" % ipn.errors
-
-
 
     if ipn_obj is None:
         ipn_obj = PayUIPN()
