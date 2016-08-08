@@ -24,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from payu.conf import MERCHANT_KEY
-from payu.models import PayUIPN
+from payu.models import PayUIPN, Token
 from payu.forms import PayUIPNForm
 
 
@@ -49,7 +49,7 @@ def ipn(request):
     else:
         if ipn.is_valid():
             try:
-                #When commit = False, object is returned without saving to DB.
+                # When commit = False, object is returned without saving to DB.
                 ipn_obj = ipn.save(commit=False)
             except Exception, e:
                 flag = "Exception while processing. (%s)" % e
@@ -59,16 +59,31 @@ def ipn(request):
     if ipn_obj is None:
         ipn_obj = PayUIPN()
 
-    #Set query params and sender's IP address
+    # Set query params and sender's IP address
     ipn_obj.initialize(request)
 
     if flag is not None:
-        #We save errors in the flag field
+        # We save errors in the flag field
         ipn_obj.set_flag(flag)
 
     ipn_obj.save()
     ipn_obj.send_signals()
 
+    # Check for a token in the request and save it if found
+    IPN_CC_TOKEN = request.POST.get('IPN_CC_TOKEN')
+    IPN_CC_MASK = request.POST.get('IPN_CC_MASK')
+    IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
+
+    if None not in [IPN_CC_TOKEN, IPN_CC_MASK, IPN_CC_EXP_DATE]:
+        token = Token.objects.create(
+            IPN_CC_TOKEN=IPN_CC_TOKEN,
+            IPN_CC_MASK=IPN_CC_MASK,
+            IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
+            ipn=ipn_obj
+        )
+        token.send_signals()
+
+    # Send confirmation to PayU that we received this request
     date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
     hash = hmac.new(MERCHANT_KEY,'00014%s' % date).hexdigest()
-    return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date,hash))
+    return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, hash))

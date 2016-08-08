@@ -15,7 +15,8 @@
 # 
 
 from django.db import models
-from payu.signals import payment_completed, payment_authorized, payment_flagged
+from payu.signals import (payment_completed, payment_authorized,
+                          payment_flagged, token_created)
 
 PAYU_PAYMENT_STATUS = (
     ('PAYMENT_AUTHORIZED','PAYMENT_AUTHORIZED'),
@@ -26,6 +27,7 @@ PAYU_PAYMENT_STATUS = (
     ('REVERSED','REVERSED'),
     ('REFUND','REFUND')
 )
+
 
 class PayUIPN(models.Model):
     HASH = models.CharField(max_length=64)
@@ -54,16 +56,14 @@ class PayUIPN(models.Model):
         self.flag = True
         self.flag_info += info
 
-
     def send_signals(self):
         if self.flag:
             payment_flagged.send(sender=self)
             return
-        if self.ORDERSTATUS in ['PAYMENT_AUTHORIZED','PAYMENT_RECEIVED','TEST']:
+        if self.ORDERSTATUS in ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'TEST']:
             payment_authorized.send(sender=self)
         if self.ORDERSTATUS == 'COMPLETE':
             payment_completed.send(sender=self)
-
 
     def __unicode__(self):
         return u'<IPN: %s>' % self.REFNO
@@ -71,3 +71,21 @@ class PayUIPN(models.Model):
     class Meta:
         verbose_name = 'PayU IPN'
         db_table = 'payu_ipn'
+
+
+class Token(models.Model):
+    ipn = models.OneToOneField(PayUIPN)
+
+    # same value as IPN's REFNO
+    IPN_CC_TOKEN = models.CharField(max_length=9, verbose_name="Token")
+
+    # documentation is unclear of the length and format of this field
+    IPN_CC_MASK = models.CharField(max_length=36, verbose_name="Last 4 digits")
+
+    IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
+
+    def send_signals(self):
+        token_created.send(sender=self)
+
+    def __unicode__(self):
+        return u'<Token: %s>' % self.IPN_CC_TOKEN
