@@ -22,6 +22,7 @@ from django import forms
 from payu.models import PayUIPN
 from payu.conf import MERCHANT, MERCHANT_KEY, TEST
 
+
 class ValueHiddenInput(forms.HiddenInput):
     """
     Widget that renders only if it has a value.
@@ -65,6 +66,7 @@ PAYU_LANGUAGES = (
     ('IT', u'Italiano')
 )
 
+
 class OrderWidget(forms.MultiWidget):
     def __init__(self, *args, **kwargs):
         all_widgets = (
@@ -93,8 +95,10 @@ class OrderWidget(forms.MultiWidget):
         v.append(value.get('VER',''))
         return v
 
+
 class OrderField(forms.MultiValueField):
     widget = OrderWidget
+
     def __init__(self, *args, **kwargs):
         all_fields = (
             forms.CharField(), #PNAME
@@ -109,11 +113,14 @@ class OrderField(forms.MultiValueField):
         )
         super(OrderField, self).__init__(all_fields,*args, **kwargs)
 
+
 class OrdersWidget(forms.MultiWidget):
     is_hidden = True
+
     def __init__(self, count, *args, **kwargs):
         all_widgets = ((OrderWidget()) for x in range(0,count))
         super(OrdersWidget,self).__init__(all_widgets, *args, **kwargs)
+
 
 class OrdersField(forms.MultiValueField):
     def __init__(self, *args, **kwargs):
@@ -125,13 +132,16 @@ class OrdersField(forms.MultiValueField):
             all_fields = ((OrderField()) for p in products)
         super(OrdersField, self).__init__(all_fields,*args, **kwargs)
 
+
 def auto_now():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+
 class PayULiveUpdateForm(forms.Form):
-    MERCHANT = forms.CharField(widget=ValueHiddenInput,initial=MERCHANT)
-    ORDER_REF = forms.CharField(widget=ValueHiddenInput,initial='')
-    ORDER_DATE = forms.CharField(widget=ValueHiddenInput,initial=auto_now())
+    MERCHANT = forms.CharField(widget=ValueHiddenInput, initial=MERCHANT)
+    LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial="1")
+    ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
+    ORDER_DATE = forms.CharField(widget=ValueHiddenInput, initial=auto_now())
 
     ORDER = OrdersField()
     ORDER_SHIPPING = forms.CharField(widget=ValueHiddenInput)
@@ -166,7 +176,7 @@ class PayULiveUpdateForm(forms.Form):
                 break
             v = bf.value()
             if bf.name == 'ORDER':
-                for k in ['PNAME','PGROUP','PCODE','PINFO','PRICE','PRICE_TYPE','QTY','VAT','VER']:
+                for k in ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER']:
                     missing = ''
                     for o in v:
                         _v = o.get(k,None)
@@ -191,7 +201,7 @@ class PayULiveUpdateForm(forms.Form):
     def __init__(self, **kwargs):
         initial = kwargs.get('initial',{})
         orders = initial.get('ORDER',[])
-        for k in ['PNAME','PGROUP','PCODE','PINFO','PRICE','PRICE_TYPE','QTY','VAT','VER']:
+        for k in ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER']:
             missing = ''
             for o in orders:
                 missing += r'%s' % o.get(k,'')
@@ -202,7 +212,7 @@ class PayULiveUpdateForm(forms.Form):
                     if k == 'QTY': o[k] = 1
                     if k == 'VAT': o[k] = 24
 
-        super(PayULiveUpdateForm,self).__init__(**kwargs)
+        super(PayULiveUpdateForm, self).__init__(**kwargs)
         self.fields['ORDER'] = OrdersField(initial=orders)
         self.fields['ORDER_HASH'].initial = self.calc_hash()
 
