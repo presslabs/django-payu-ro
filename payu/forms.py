@@ -1,26 +1,28 @@
 # coding=utf-8
-# 
+#
 # Copyright 2012-2016 PressLabs SRL
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-# 
-import hmac
-from django.core.exceptions import ValidationError
+#
 import re
+import hmac
 from datetime import datetime
+
 from django import forms
+from django.core.exceptions import ValidationError
+
 from payu.models import PayUIPN
-from payu.conf import MERCHANT, MERCHANT_KEY, TEST
+from payu.conf import MERCHANT, MERCHANT_KEY, TEST, PAYU_ORDER_TYPES
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -28,14 +30,16 @@ class ValueHiddenInput(forms.HiddenInput):
     Widget that renders only if it has a value.
     Used to remove unused fields from PayPal buttons.
     """
+
     def render(self, name, value, attrs=None):
-        m = re.match(r'^ORDER_(\d+)_(\d+)$',name)
-        if m is not None:
-            name = 'ORDER_%s[]' % ['PNAME','PGROUP','PCODE','PINFO','PRICE','PRICE_TYPE','QTY','VAT','VER'][int('0'+m.group(2))]
-        if value is None:
+        if not value:
             return u''
-        else:
-            return super(ValueHiddenInput, self).render(name, value, attrs)
+
+        order_type = re.match(r'^ORDER_(\d+)_(\d+)$', name)
+        if not order_type:
+            name = 'ORDER_%s[]' % PAYU_ORDER_TYPES[int(order_type.group(2))]
+
+        return super(ValueHiddenInput, self).render(name, value, attrs)
 
 
 PAYU_DATE_FORMATS = (
@@ -43,18 +47,18 @@ PAYU_DATE_FORMATS = (
 )
 
 PAYU_CURRENCIES = (
-    ('USD','USD'),
-    ('RON','RON'),
-    ('EUR','EUR')
+    ('USD', 'USD'),
+    ('RON', 'RON'),
+    ('EUR', 'EUR')
 )
 
 PAYU_PAYMENT_METHODS = (
     ('CCVISAMC', 'VISA/Mastercard Card'),
     ('CCAMEX', 'AMEX Card'),
-    ('CCDINERS','Diners Club Card'),
+    ('CCDINERS', 'Diners Club Card'),
     ('CCJCB', 'JCB Card'),
-    ('WIRE','Bank Wire'),
-    ('PAYPAL','PayPal')
+    ('WIRE', 'Bank Wire'),
+    ('PAYPAL', 'PayPal')
 )
 
 PAYU_LANGUAGES = (
@@ -69,48 +73,18 @@ PAYU_LANGUAGES = (
 
 class OrderWidget(forms.MultiWidget):
     def __init__(self, *args, **kwargs):
-        all_widgets = (
-            ValueHiddenInput(), #PNAME
-            ValueHiddenInput(), #PGROUP
-            ValueHiddenInput(), #PCODE
-            ValueHiddenInput(), #PINFO
-            ValueHiddenInput(), #PRICE
-            ValueHiddenInput(), #PRICE_TYPE
-            ValueHiddenInput(), #QTY
-            ValueHiddenInput(), #VAT
-            ValueHiddenInput(), #VER
-        )
-        super(OrderWidget,self).__init__(all_widgets, *args, **kwargs)
+        all_widgets = tuple(ValueHiddenInput() for _ in PAYU_ORDER_TYPES)
+        super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
     def decompress(self, value):
-        v = []
-        v.append(value.get('PNAME',''))
-        v.append(value.get('PGROUP',''))
-        v.append(value.get('PCODE',''))
-        v.append(value.get('PINFO',''))
-        v.append(value.get('PRICE',''))
-        v.append(value.get('PRICE_TYPE',''))
-        v.append(value.get('QTY',''))
-        v.append(value.get('VAT',''))
-        v.append(value.get('VER',''))
-        return v
+        return [value.get(order_type, '') for order_type in PAYU_ORDER_TYPES]
 
 
 class OrderField(forms.MultiValueField):
     widget = OrderWidget
 
     def __init__(self, *args, **kwargs):
-        all_fields = (
-            forms.CharField(), #PNAME
-            forms.CharField(), #PGROUP
-            forms.CharField(), #PCODE
-            forms.CharField(), #PINFO
-            forms.CharField(), #PRICE
-            forms.CharField(), #PRICE_TYPE
-            forms.CharField(), #QTY
-            forms.CharField(), #VAT
-            forms.CharField(), #VER
-        )
+        all_fields = tuple(forms.CharField() for _ in PAYU_ORDER_TYPES)
         super(OrderField, self).__init__(all_fields,*args, **kwargs)
 
 
@@ -118,19 +92,21 @@ class OrdersWidget(forms.MultiWidget):
     is_hidden = True
 
     def __init__(self, count, *args, **kwargs):
-        all_widgets = ((OrderWidget()) for x in range(0,count))
-        super(OrdersWidget,self).__init__(all_widgets, *args, **kwargs)
+        all_widgets = tuple((OrderWidget()) for _ in range(count))
+        super(OrdersWidget, self).__init__(all_widgets, *args, **kwargs)
 
 
 class OrdersField(forms.MultiValueField):
     def __init__(self, *args, **kwargs):
-        products = kwargs.get('initial')
+        products = kwargs['initial']
         kwargs['label'] = ''
-        all_fields = ()
+
+        all_fields = tuple()
         if products is not None:
             self.widget = OrdersWidget(len(products))
-            all_fields = ((OrderField()) for p in products)
-        super(OrdersField, self).__init__(all_fields,*args, **kwargs)
+            all_fields = tuple((OrderField()) for _ in products)
+
+        super(OrdersField, self).__init__(all_fields, *args, **kwargs)
 
 
 def auto_now():
@@ -145,12 +121,15 @@ class PayULiveUpdateForm(forms.Form):
 
     ORDER = OrdersField()
     ORDER_SHIPPING = forms.CharField(widget=ValueHiddenInput)
-    PRICES_CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,choices=PAYU_CURRENCIES, initial='USD')
+    PRICES_CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,
+                                        choices=PAYU_CURRENCIES, initial='USD')
     DISCOUNT = forms.CharField(widget=ValueHiddenInput)
 
-    PAY_METHOD = forms.ChoiceField(widget=ValueHiddenInput,choices=PAYU_PAYMENT_METHODS)
+    PAY_METHOD = forms.ChoiceField(widget=ValueHiddenInput,
+                                   choices=PAYU_PAYMENT_METHODS)
 
-    ORDER_HASH = forms.CharField(widget=ValueHiddenInput,initial='')
+    ORDER_HASH = forms.CharField(widget=ValueHiddenInput,
+                                 initial='')
 
     BILL_FNAME = forms.CharField(widget=ValueHiddenInput)
     BILL_LNAME = forms.CharField(widget=ValueHiddenInput)
@@ -161,14 +140,19 @@ class PayULiveUpdateForm(forms.Form):
     BILL_COMPANY = forms.CharField(widget=ValueHiddenInput)
     BILL_FISCALCODE = forms.CharField(widget=ValueHiddenInput)
 
-    CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,choices=PAYU_CURRENCIES, initial='USD')
-    AUTOMODE = forms.CharField(widget=ValueHiddenInput,initial='1')
-    LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput,choices=PAYU_LANGUAGES, initial='EN')
+    CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,
+                                 choices=PAYU_CURRENCIES, initial='USD')
+    AUTOMODE = forms.CharField(widget=ValueHiddenInput,
+                               initial='1')
+    LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput,
+                                 choices=PAYU_LANGUAGES, initial='EN')
     BACK_REF = forms.CharField(widget=ValueHiddenInput)
-    TESTORDER = forms.CharField(widget=ValueHiddenInput,initial=('%s' % TEST).upper())
+    TESTORDER = forms.CharField(widget=ValueHiddenInput,
+                                initial=('%s' % TEST).upper())
 
     def calc_hash(self):
         s = u''
+
         # We need this hack since payU is not consistent with the order of fields in hash string
         append = u''
         for bf in self:
@@ -199,18 +183,18 @@ class PayULiveUpdateForm(forms.Form):
         return hmac.new(MERCHANT_KEY, s).hexdigest()
 
     def __init__(self, **kwargs):
-        initial = kwargs.get('initial',{})
-        orders = initial.get('ORDER',[])
-        for k in ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER']:
-            missing = ''
-            for o in orders:
-                missing += r'%s' % o.get(k,'')
-            missing = len(missing) == 0
-            if missing:
-                for o in orders:
-                    o[k] = None
-                    if k == 'QTY': o[k] = 1
-                    if k == 'VAT': o[k] = 24
+        initial = kwargs.get('initial', {})
+        orders = initial.get('ORDER', [])
+
+        # TODO: refactor this one pls
+        for order_type in PAYU_ORDER_TYPES:
+            if not all([order_type in order for order in orders]):
+                for order in orders:
+                    order[order_type] = None
+                    if order_type == 'QTY':
+                        order[order_type] = 1
+                    if order_type == 'VAT':
+                        order[order_type] = 24
 
         super(PayULiveUpdateForm, self).__init__(**kwargs)
         self.fields['ORDER'] = OrdersField(initial=orders)
@@ -219,5 +203,4 @@ class PayULiveUpdateForm(forms.Form):
 
 class PayUIPNForm(forms.ModelForm):
     class Meta:
-        exclude = []
         model = PayUIPN
