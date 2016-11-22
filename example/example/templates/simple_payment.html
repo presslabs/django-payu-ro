@@ -1,0 +1,7 @@
+{% load i18n %}
+<form action="https://secure.epayment.ro/order/lu.php" method="post">
+    {{ form }}
+    <button type="submit" class="btn btn-primary pay"><i class="icon-chevron-right"></i>
+        {% trans "Pay by Card" %}
+    </button>
+</form>

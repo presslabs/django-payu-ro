@@ -39,7 +39,7 @@ class ValueHiddenInput(forms.HiddenInput):
             return u''
 
         detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
-        if not detail:
+        if detail:
             name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
 
         return super(ValueHiddenInput, self).render(name, value, attrs)
@@ -72,7 +72,7 @@ class OrdersWidget(forms.MultiWidget):
 
 class OrdersField(forms.MultiValueField):
     def __init__(self, *args, **kwargs):
-        products = kwargs['initial']
+        products = kwargs.get('initial', [])
         kwargs['label'] = ''
 
         all_fields = tuple()
@@ -172,4 +172,5 @@ class PayULiveUpdateForm(forms.Form):
 
 class PayUIPNForm(forms.ModelForm):
     class Meta:
+        exclude = []
         model = PayUIPN
