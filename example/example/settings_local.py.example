@@ -1,0 +1,4 @@
+from settings import *
+
+PAYU_MERCHANT = ''
+PAYU_KEY = ''
