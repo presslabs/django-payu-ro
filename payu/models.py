@@ -18,16 +18,7 @@ from django.db import models
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, token_created)
-
-PAYU_PAYMENT_STATUS = (
-    ('PAYMENT_AUTHORIZED', 'PAYMENT_AUTHORIZED'),
-    ('PAYMENT_RECEIVED', 'PAYMENT_RECEIVED'),
-    ('TEST', 'TEST'),
-    ('CASH', 'CASH'),
-    ('COMPLETE', 'COMPLETE'),
-    ('REVERSED', 'REVERSED'),
-    ('REFUND', 'REFUND')
-)
+from payu.conf import PAYU_PAYMENT_STATUS
 
 
 class PayUIPN(models.Model):
@@ -47,8 +38,10 @@ class PayUIPN(models.Model):
 
     response = models.TextField(blank=True)
     ip_address = models.IPAddressField(blank=True)
+
     flag = models.BooleanField(default=False)
     flag_info = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -58,6 +51,7 @@ class PayUIPN(models.Model):
 
     def set_flag(self, info):
         """Sets a flag on the transaction and also sets a reason."""
+
         self.flag = True
         self.flag_info += info
 

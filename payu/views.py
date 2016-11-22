@@ -16,8 +16,9 @@
 
 import hmac
 import hashlib
-import pytz
 from datetime import datetime
+
+import pytz
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -31,41 +32,37 @@ from payu.forms import PayUIPNForm
 @require_POST
 @csrf_exempt
 def ipn(request):
-    ipn = PayUIPNForm(request.POST)
+    ipn_form = PayUIPNForm(request.POST)
     ipn_obj = None
-    flag = None
+    error = None
 
-    s = ''
-    for key, val in request.POST.iteritems():
-        if val == 'HASH':
-            continue
-
-        s += '%s%s' % (len(val), val)
-
-    expected_hash = hmac.new(MERCHANT_KEY, s, hashlib.md5).hexdigest()
+    validation_hash = "".join(['%s%s' % (len(field), field)
+                               for field in request.POST.values()
+                               if field != 'HASH'
+                              ])
+    expected_hash = hmac.new(MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
     request_hash = request.POST.get('HASH', '')
 
     if request_hash != expected_hash:
-        flag = 'Invalid hash %s. Hash string \n%s' % (request_hash, s)
+        error = 'Invalid hash %s. Hash string \n%s' % (request_hash, validation_hash)
     else:
         if ipn.is_valid():
             try:
-                # When commit = False, object is returned without saving to DB.
                 ipn_obj = ipn.save(commit=False)
-            except Exception, e:
-                flag = "Exception while processing. (%s)" % e
+            except Exception, exception:
+                error = "Exception while processing. (%s)" % exception
         else:
-            flag = "Invalid form. (%s)" % ipn.errors
+            error = "Invalid form. (%s)" % ipn.errors
 
-    if ipn_obj is None:
+    if not ipn_obj:
         ipn_obj = PayUIPN()
 
     # Set query params and sender's IP address
     ipn_obj.initialize(request)
 
-    if flag is not None:
-        # We save errors in the flag field
-        ipn_obj.set_flag(flag)
+    if error:
+        # We save errors in the error field
+        ipn_obj.set_flag(error)
 
     ipn_obj.save()
     ipn_obj.send_signals()
@@ -75,16 +72,15 @@ def ipn(request):
     IPN_CC_MASK = request.POST.get('IPN_CC_MASK')
     IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
 
-    if None not in [IPN_CC_TOKEN, IPN_CC_MASK, IPN_CC_EXP_DATE]:
-        token = Token.objects.create(
+    if all([IPN_CC_TOKEN, IPN_CC_MASK, IPN_CC_EXP_DATE]):
+        Token.objects.create(
             IPN_CC_TOKEN=IPN_CC_TOKEN,
             IPN_CC_MASK=IPN_CC_MASK,
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
             ipn=ipn_obj
-        )
-        token.send_signals()
+        ).send_signals()
 
     # Send confirmation to PayU that we received this request
     date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
-    hash = hmac.new(MERCHANT_KEY,'00014%s' % date).hexdigest()
-    return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, hash))
+    confirmation_hash = hmac.new(MERCHANT_KEY, '00014%s' % date).hexdigest()
+    return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))

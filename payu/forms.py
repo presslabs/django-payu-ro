@@ -22,7 +22,10 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from payu.models import PayUIPN
-from payu.conf import MERCHANT, MERCHANT_KEY, TEST, PAYU_ORDER_TYPES
+from payu.conf import (MERCHANT, MERCHANT_KEY, TEST,
+                       PAYU_ORDER_DETAILS, PAYU_ORDER_DETAILS_DEFAULTS,
+                       PAYU_DATE_FORMATS, PAYU_CURRENCIES,
+                       PAYU_PAYMENT_METHODS, PAYU_LANGUAGES)
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -35,57 +38,28 @@ class ValueHiddenInput(forms.HiddenInput):
         if not value:
             return u''
 
-        order_type = re.match(r'^ORDER_(\d+)_(\d+)$', name)
-        if not order_type:
-            name = 'ORDER_%s[]' % PAYU_ORDER_TYPES[int(order_type.group(2))]
+        detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
+        if not detail:
+            name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
 
         return super(ValueHiddenInput, self).render(name, value, attrs)
 
 
-PAYU_DATE_FORMATS = (
-    '%Y-%m-%d %H:%M:%S'
-)
-
-PAYU_CURRENCIES = (
-    ('USD', 'USD'),
-    ('RON', 'RON'),
-    ('EUR', 'EUR')
-)
-
-PAYU_PAYMENT_METHODS = (
-    ('CCVISAMC', 'VISA/Mastercard Card'),
-    ('CCAMEX', 'AMEX Card'),
-    ('CCDINERS', 'Diners Club Card'),
-    ('CCJCB', 'JCB Card'),
-    ('WIRE', 'Bank Wire'),
-    ('PAYPAL', 'PayPal')
-)
-
-PAYU_LANGUAGES = (
-    ('RO', u'Română'),
-    ('EN', u'English'),
-    ('DE', u'Deutsch'),
-    ('ES', u'Español'),
-    ('FR', u'Français'),
-    ('IT', u'Italiano')
-)
-
-
 class OrderWidget(forms.MultiWidget):
     def __init__(self, *args, **kwargs):
-        all_widgets = tuple(ValueHiddenInput() for _ in PAYU_ORDER_TYPES)
+        all_widgets = tuple(ValueHiddenInput() for _ in PAYU_ORDER_DETAILS)
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
     def decompress(self, value):
-        return [value.get(order_type, '') for order_type in PAYU_ORDER_TYPES]
+        return [value.get(detail, '') for detail in PAYU_ORDER_DETAILS]
 
 
 class OrderField(forms.MultiValueField):
     widget = OrderWidget
 
     def __init__(self, *args, **kwargs):
-        all_fields = tuple(forms.CharField() for _ in PAYU_ORDER_TYPES)
-        super(OrderField, self).__init__(all_fields,*args, **kwargs)
+        all_fields = tuple(forms.CharField() for _ in PAYU_ORDER_DETAILS)
+        super(OrderField, self).__init__(all_fields, *args, **kwargs)
 
 
 class OrdersWidget(forms.MultiWidget):
@@ -102,22 +76,19 @@ class OrdersField(forms.MultiValueField):
         kwargs['label'] = ''
 
         all_fields = tuple()
-        if products is not None:
+        if products:
             self.widget = OrdersWidget(len(products))
             all_fields = tuple((OrderField()) for _ in products)
 
         super(OrdersField, self).__init__(all_fields, *args, **kwargs)
 
 
-def auto_now():
-    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-
 class PayULiveUpdateForm(forms.Form):
     MERCHANT = forms.CharField(widget=ValueHiddenInput, initial=MERCHANT)
     LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial="1")
     ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
-    ORDER_DATE = forms.CharField(widget=ValueHiddenInput, initial=auto_now())
+    ORDER_DATE = forms.CharField(widget=ValueHiddenInput,
+                                 initial=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     ORDER = OrdersField()
     ORDER_SHIPPING = forms.CharField(widget=ValueHiddenInput)
@@ -148,57 +119,55 @@ class PayULiveUpdateForm(forms.Form):
                                  choices=PAYU_LANGUAGES, initial='EN')
     BACK_REF = forms.CharField(widget=ValueHiddenInput)
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
-                                initial=('%s' % TEST).upper())
+                                initial=str(TEST).upper())
 
-    def calc_hash(self):
-        s = u''
+    def _get_order_hash(self):
+        result = u''
 
         # We need this hack since payU is not consistent with the order of fields in hash string
-        append = u''
-        for bf in self:
-            if bf.name == 'ORDER_HASH':
+        suffix = u''
+        for field in self:
+            if field.name == 'ORDER_HASH':
                 break
-            v = bf.value()
-            if bf.name == 'ORDER':
-                for k in ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE', 'QTY', 'VAT', 'VER']:
-                    missing = ''
-                    for o in v:
-                        _v = o.get(k,None)
-                        if _v is None:
-                            _v = ''
-                        missing += r'%s' % _v
-                    missing = len(missing) == 0
-                    if not missing:
-                        for o in v:
-                            val = o.get(k,'')
-                            itm = u'%d%s' % (len(r'%s' % val),val)
-                            if k == 'PRICE_TYPE':
-                                append += itm
+
+            field_value = field.value()
+
+            if field.name != 'ORDER' and field_value:
+                result += u'%d%s' % (len(str(field_value)), field_value)
+                continue
+
+            if field.name == 'ORDER':
+
+                for detail in PAYU_ORDER_DETAILS:
+                    if not any([detail in order and order[detail]
+                                for order in field_value]):
+
+                        for order in field_value:
+                            value = order.get(detail, '')
+
+                            item = u'%d%s' % (len(str(value)), value)
+
+                            if detail == 'PRICE_TYPE':
+                                suffix += item
                             else:
-                                s += itm
-            else:
-                if v is not None:
-                    s += u'%d%s' % (len(r'%s' % v),v)
-        s += append
-        return hmac.new(MERCHANT_KEY, s).hexdigest()
+                                result += item
+
+        result += suffix
+        return hmac.new(MERCHANT_KEY, result).hexdigest()
 
     def __init__(self, **kwargs):
         initial = kwargs.get('initial', {})
         orders = initial.get('ORDER', [])
 
-        # TODO: refactor this one pls
-        for order_type in PAYU_ORDER_TYPES:
-            if not all([order_type in order for order in orders]):
+        for detail in PAYU_ORDER_DETAILS:
+            if not any([detail in order for order in orders]):
                 for order in orders:
-                    order[order_type] = None
-                    if order_type == 'QTY':
-                        order[order_type] = 1
-                    if order_type == 'VAT':
-                        order[order_type] = 24
+                    order[detail] = PAYU_ORDER_DETAILS_DEFAULTS.get(detail, None)
 
         super(PayULiveUpdateForm, self).__init__(**kwargs)
+
         self.fields['ORDER'] = OrdersField(initial=orders)
-        self.fields['ORDER_HASH'].initial = self.calc_hash()
+        self.fields['ORDER_HASH'].initial = self._get_order_hash()
 
 
 class PayUIPNForm(forms.ModelForm):

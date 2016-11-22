@@ -22,5 +22,49 @@ TEST = getattr(settings, "PAYU_TEST", True)
 MERCHANT = settings.PAYU_MERCHANT
 MERCHANT_KEY = settings.PAYU_KEY
 
-PAYU_ORDER_TYPES = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
-                    'QTY', 'VAT', 'VER']
+
+PAYU_ORDER_DETAILS = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
+                      'QTY', 'VAT', 'VER']
+
+PAYU_ORDER_DETAILS_DEFUALTS = {
+    'QTY': 1,
+    'VAT': 24
+}
+
+PAYU_DATE_FORMATS = (
+    '%Y-%m-%d %H:%M:%S'
+)
+
+PAYU_CURRENCIES = (
+    ('USD', 'USD'),
+    ('RON', 'RON'),
+    ('EUR', 'EUR')
+)
+
+PAYU_PAYMENT_METHODS = (
+    ('CCVISAMC', 'VISA/Mastercard Card'),
+    ('CCAMEX', 'AMEX Card'),
+    ('CCDINERS', 'Diners Club Card'),
+    ('CCJCB', 'JCB Card'),
+    ('WIRE', 'Bank Wire'),
+    ('PAYPAL', 'PayPal')
+)
+
+PAYU_LANGUAGES = (
+    ('RO', u'Română'),
+    ('EN', u'English'),
+    ('DE', u'Deutsch'),
+    ('ES', u'Español'),
+    ('FR', u'Français'),
+    ('IT', u'Italiano')
+)
+
+PAYU_PAYMENT_STATUS = (
+    ('PAYMENT_AUTHORIZED', 'PAYMENT_AUTHORIZED'),
+    ('PAYMENT_RECEIVED', 'PAYMENT_RECEIVED'),
+    ('TEST', 'TEST'),
+    ('CASH', 'CASH'),
+    ('COMPLETE', 'COMPLETE'),
+    ('REVERSED', 'REVERSED'),
+    ('REFUND', 'REFUND')
+)
