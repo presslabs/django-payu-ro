@@ -1,4 +1,4 @@
 from settings import *
 
-PAYU_MERCHANT = ''
-PAYU_KEY = ''
+PAYU_MERCHANT = 'PAYUDEMO'
+PAYU_KEY = '1231234567890123'

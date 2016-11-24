@@ -35,14 +35,14 @@ class ValueHiddenInput(forms.HiddenInput):
     """
 
     def render(self, name, value, attrs=None):
-        if not value:
+        if value is None:
             return u''
 
         detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
         if detail:
             name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
 
-        return super(ValueHiddenInput, self).render(name, value, attrs)
+        return super(ValueHiddenInput, self).render(name, value or "", attrs)
 
 
 class OrderWidget(forms.MultiWidget):
@@ -96,6 +96,10 @@ class PayULiveUpdateForm(forms.Form):
                                         choices=PAYU_CURRENCIES, initial='USD')
     DISCOUNT = forms.CharField(widget=ValueHiddenInput)
 
+    DESTINATION_CITY = forms.CharField(widget=ValueHiddenInput)
+    DESTINATION_STATE = forms.CharField(widget=ValueHiddenInput)
+    DESTINATION_COUNTRY = forms.CharField(widget=ValueHiddenInput)
+
     PAY_METHOD = forms.ChoiceField(widget=ValueHiddenInput,
                                    choices=PAYU_PAYMENT_METHODS)
 
@@ -121,26 +125,27 @@ class PayULiveUpdateForm(forms.Form):
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
                                 initial=str(TEST).upper())
 
-    def _get_order_hash(self):
+    @property
+    def signature(self):
         result = u''
 
         # We need this hack since payU is not consistent with the order of fields in hash string
         suffix = u''
         for field in self:
             if field.name == 'ORDER_HASH':
-                break
+                continue
 
             field_value = field.value()
 
-            if field.name != 'ORDER' and field_value:
+            if (field.name not in ['ORDER', 'LANGUAGE'] and field_value) or \
+                (field.name == 'TESTORDER' and field_value == 'TRUE'):
                 result += u'%d%s' % (len(str(field_value)), field_value)
                 continue
 
             if field.name == 'ORDER':
-
                 for detail in PAYU_ORDER_DETAILS:
-                    if not any([detail in order and order[detail]
-                                for order in field_value]):
+                    if any([detail in order and order[detail]
+                            for order in field_value]):
 
                         for order in field_value:
                             value = order.get(detail, '')
@@ -167,7 +172,7 @@ class PayULiveUpdateForm(forms.Form):
         super(PayULiveUpdateForm, self).__init__(**kwargs)
 
         self.fields['ORDER'] = OrdersField(initial=orders)
-        self.fields['ORDER_HASH'].initial = self._get_order_hash()
+        self.fields['ORDER_HASH'].initial = self.signature
 
 
 class PayUIPNForm(forms.ModelForm):

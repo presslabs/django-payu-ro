@@ -12,14 +12,6 @@ $ pip install -r requirements.txt
 ```
 
 Now we need to create the database tables and an admin user.
-On Django 1.6 and below, run the following and when prompted to create a
-superuser choose yes and follow the instructions:
-
-```
-$ python manage.py syncdb --migrate
-```
-
-On Django 1.7 and above:
 
 ```
 $ python manage.py migrate
@@ -33,4 +25,4 @@ $ python manage.py runserver
 ```
 
 You should then be able to open your browser on http://127.0.0.1:8000 and see
-a page with a payu form.
+a page with a PayU form.

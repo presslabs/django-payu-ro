@@ -1,16 +1,7 @@
-from random import randint
-
-from payu.forms import PayULiveUpdateForm
-
-from django.http import HttpResponse
-from django.shortcuts import render
+from .forms import PayULiveUpdateForm
 
 
-def home(request):
-    payment_reference = randint(500, 1000)
-    price = 1
-    vat = 24
-
+def test_calculate_correct_hash():
     payu_dict = {
         'ORDER_REF': 112457,
         'ORDER_DATE': '2012-05-01 15:51:35',
@@ -37,6 +28,5 @@ def home(request):
         'PAY_METHOD': 'CCVISAMC'
     }
 
-    return render(request, 'simple_payment.html', {
-        'form': PayULiveUpdateForm(initial=payu_dict)
-    })
+    payu_form = PayULiveUpdateForm(initial=payu_dict)
+    assert payu_form.signature == 'c6e9b0135191e9103beaf1e0f5ab6096'
