@@ -160,14 +160,17 @@ class PayULiveUpdateForm(forms.Form):
         result += suffix
         return hmac.new(MERCHANT_KEY, result).hexdigest()
 
-    def __init__(self, **kwargs):
-        initial = kwargs.get('initial', {})
-        orders = initial.get('ORDER', [])
-
+    def _prepare_orders(self, orders):
         for detail in PAYU_ORDER_DETAILS:
             if not any([detail in order for order in orders]):
                 for order in orders:
                     order[detail] = PAYU_ORDER_DETAILS_DEFAULTS.get(detail, None)
+
+        return orders
+
+    def __init__(self, **kwargs):
+        initial = kwargs.get('initial', {})
+        orders = self._prepare_orders(initial.get('ORDER', []))
 
         super(PayULiveUpdateForm, self).__init__(**kwargs)
 
