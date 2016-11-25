@@ -1,6 +1,6 @@
 import pytest
 
-from payu.forms import PayULiveUpdateForm, OrdersField
+from payu.forms import PayULiveUpdateForm, ValueHiddenInput
 
 
 @pytest.mark.parametrize("payload,signature", [
@@ -111,3 +111,14 @@ def test_calculate_correct_hash(payload, signature):
 def test_orders_parsing(payload, orders):
     payu_form = PayULiveUpdateForm(initial=payload)
     assert payu_form._prepare_orders(payload['ORDER']) == orders
+
+
+@pytest.mark.parametrize("field,html", [
+    (ValueHiddenInput().render('name', None), ''),
+    (ValueHiddenInput().render('name', ''), '<input name="name" type="hidden" />'),
+    (ValueHiddenInput().render('name', 'value'), '<input name="name" type="hidden" value="value" />'),
+    (ValueHiddenInput().render('ORDER_10_0', 'a'), '<input name="ORDER_PNAME[]" type="hidden" value="a" />'),
+    (ValueHiddenInput().render('ORDER_10_10', 'a'), '<input name="ORDER_10_10" type="hidden" value="a" />'),
+])
+def test_value_input_hiddend(field, html):
+    assert field == html

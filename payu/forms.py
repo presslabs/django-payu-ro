@@ -39,7 +39,7 @@ class ValueHiddenInput(forms.HiddenInput):
             return u''
 
         detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
-        if detail:
+        if detail and int(detail.group(2)) < len(PAYU_ORDER_DETAILS):
             name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
 
         return super(ValueHiddenInput, self).render(name, value or "", attrs)
