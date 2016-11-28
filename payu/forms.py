@@ -31,7 +31,7 @@ from payu.conf import (MERCHANT, MERCHANT_KEY, TEST,
 class ValueHiddenInput(forms.HiddenInput):
     """
     Widget that renders only if it has a value.
-    Used to remove unused fields from PayPal buttons.
+    Used to remove unused fields from PayU buttons.
     """
 
     def render(self, name, value, attrs=None):
@@ -121,12 +121,47 @@ class PayULiveUpdateForm(forms.Form):
                                initial='1')
     LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput,
                                  choices=PAYU_LANGUAGES, initial='EN')
+    SELECTED_INSTALLMENTS_NO = forms.CharField(widget=ValueHiddenInput)
     BACK_REF = forms.CharField(widget=ValueHiddenInput)
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
                                 initial=str(TEST).upper())
 
     @property
     def signature(self):
+        """
+        Compute the ORDER_HASH of the request.
+
+        The hashable string is composed by getting the values from:
+            MERCHANT
+            ORDER_REF
+            ORDER_DATE
+            ORDER_PNAME[]
+            ORDER_PCODE[]
+            ORDER_PINFO[]
+            ORDER_PRICE[]
+            ORDER_QTY[]
+            ORDER_VAT[]
+            ORDER_SHIPPING
+            PRICES_CURRENCY
+            DISCOUNT
+            DESTINATION_CITY
+            DESTINATION_STATE
+            DESTINATION_COUNTRY
+            PAY_METHOD
+            ORDER_PRICE_TYPE[]
+            SELECTED_INSTALLMENTS_NO
+            TESTORDER
+        in this exact order. Next, we need to concatenate their lenghts with
+        thier values, resulting in a string like:
+
+        8PAYUDEMO9789456123192016-10-05 11:12:279CD Player12MobilePhone6Laptop
+        10PROD_0489110PROD_0740910PROD_0496527Extended Warranty - 5 Years8
+        Dual SIM1117"Display482.371945.7545230171311220220220103RON2559
+        Bucuresti9Bucuresti2RO8CCVISAMC5GROSS5GROSS5GROSS4TRUE
+
+        Using this string and the MERCHANT_KEY, we compute the HMAC.
+        """
+
         hashable_fields = ['MERCHANT', 'ORDER_REF', 'ORDER_DATE',
                            'ORDER_SHIPPING', 'PRICES_CURRENCY', 'DISCOUNT',
                            'DESTINATION_CITY', 'DESTINATION_STATE',
@@ -134,7 +169,9 @@ class PayULiveUpdateForm(forms.Form):
                            'SELECTED_INSTALLMENTS_NO', 'TESTORDER']
         result = u''
 
-        # We need this hack since payU is not consistent with the order of fields in hash string
+        # We need this hack since payU is not consistent
+        # with the order of fields in hash string
+
         suffix = u''
         for field in self:
             if field.name == 'ORDER_HASH':
@@ -144,7 +181,8 @@ class PayULiveUpdateForm(forms.Form):
 
             if field.name in hashable_fields and field_value:
                 encoded_value = u'%d%s' % (len(str(field_value)), field_value)
-                if field.name == 'TESTORDER' and field_value == 'TRUE':
+                if (field.name == 'TESTORDER' and field_value == 'TRUE') or \
+                    field.name == 'SELECTED_INSTALLMENTS_NO':
                     suffix += encoded_value
                 else:
                     result += encoded_value
@@ -168,6 +206,11 @@ class PayULiveUpdateForm(forms.Form):
         return hmac.new(MERCHANT_KEY, result).hexdigest()
 
     def _prepare_orders(self, orders):
+        """
+        Each order needs to have all it's details filled with default value,
+        or None, in case those are not already filled.
+        """
+
         for detail in PAYU_ORDER_DETAILS:
             if not any([detail in order for order in orders]):
                 for order in orders:

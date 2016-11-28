@@ -5,6 +5,7 @@ from django.shortcuts import render
 
 def home(request):
     payu_dict = {
+        'LU_ENBLE_TOKEN': '1',
         'ORDER_REF': '789456123',
         'ORDER_DATE': '2016-10-05 11:12:27',
         'ORDER': [
@@ -44,6 +45,7 @@ def home(request):
         'DESTINATION_STATE': 'Bucuresti',
         'DESTINATION_COUNTRY': 'RO',
         'TESTORDER': 'TRUE',
+        'BACK_REF': 'http://localhost:8000/',
         'BILL_FNAME': 'Joe',
         'BILL_LNAME': 'Doe',
         'BILL_COUNTRYCODE': 'RO',
