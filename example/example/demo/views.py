@@ -1,40 +1,54 @@
-from random import randint
-
 from payu.forms import PayULiveUpdateForm
 
-from django.http import HttpResponse
 from django.shortcuts import render
 
 
 def home(request):
-    payment_reference = randint(500, 1000)
-    price = 1
-    vat = 24
-
     payu_dict = {
-        'ORDER_REF': 112457,
-        'ORDER_DATE': '2012-05-01 15:51:35',
+        'ORDER_REF': '789456123',
+        'ORDER_DATE': '2016-10-05 11:12:27',
         'ORDER': [
             {
-                'PNAME': 'MacBook Air 13 inch',
-                'PCODE': 'MBA13',
+                'PNAME': 'CD Player',
+                'PCODE': 'PROD_04891',
                 'PINFO': 'Extended Warranty - 5 Years',
-                'PRICE': 1750,
+                'PRICE': '82.3',
                 'PRICE_TYPE': 'GROSS',
-                'QTY': 1,
-                'VAT': 24
+                'QTY': '7',
+                'VAT':'20'
+            },
+            {
+                'PNAME': 'Mobile Phone',
+                'PCODE': 'PROD_07409',
+                'PINFO': 'Dual SIM',
+                'PRICE': '1945.75',
+                'PRICE_TYPE': 'GROSS',
+                'QTY': '3',
+                'VAT':'20'
+            },
+            {
+                'PNAME': 'Laptop',
+                'PCODE': 'PROD_04965',
+                'PINFO': '17" Display',
+                'PRICE': '5230',
+                'PRICE_TYPE': 'GROSS',
+                'QTY': '1',
+                'VAT':'20'
             },
         ],
+        'PRICES_CURRENCY': 'RON',
+        'ORDER_SHIPPING': '0',
+        'DISCOUNT': '55',
+        'PAY_METHOD': 'CCVISAMC',
+        'DESTINATION_CITY': 'Bucuresti',
+        'DESTINATION_STATE': 'Bucuresti',
+        'DESTINATION_COUNTRY': 'RO',
+        'TESTORDER': 'TRUE',
         'BILL_FNAME': 'Joe',
         'BILL_LNAME': 'Doe',
         'BILL_COUNTRYCODE': 'RO',
         'BILL_PHONE': '+040000000000',
         'BILL_EMAIL': 'joe.doe@gmail.com',
-        'BILL_COMPANY': 'ACME Inc',
-        'BILL_FISCALCODE': None,
-        'PRICES_CURRENCY': 'RON',
-        'CURRENCY': 'RON',
-        'PAY_METHOD': 'CCVISAMC'
     }
 
     return render(request, 'simple_payment.html', {

@@ -32,9 +32,9 @@ from payu.forms import PayUIPNForm
 @require_POST
 @csrf_exempt
 def ipn(request):
-    ipn_form = PayUIPNForm(request.POST)
     ipn_obj = None
     error = None
+    ipn_form = PayUIPNForm(request.POST)
 
     validation_hash = "".join(['%s%s' % (len(field), field)
                                for field in request.POST.values()

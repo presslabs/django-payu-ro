@@ -28,7 +28,7 @@ from payu.forms import PayULiveUpdateForm, ValueHiddenInput
         'PRICES_CURRENCY': 'RON',
         'CURRENCY': 'RON',
         'PAY_METHOD': 'CCVISAMC'
-    }, 'c6e9b0135191e9103beaf1e0f5ab6096'),
+    }, '5b118e083e52a24872f579134c5db6cc'),
     ({
         'ORDER_REF': 112457,
         'ORDER_DATE': '2012-05-01 15:51:35',
@@ -55,7 +55,53 @@ from payu.forms import PayULiveUpdateForm, ValueHiddenInput
         'LANGUAGE': 'RO',
         'TEST': True,
         'PAY_METHOD': 'CCVISAMC'
-    }, '8d6acdf75aa76eb5da0fe6fdefd04723')
+    }, 'e327589caadf200996521a4d0b433ef5'),
+    ({
+        'ORDER_REF': '789456123',
+        'ORDER_DATE': '2016-10-05 11:12:27',
+        'ORDER': [
+            {
+                'PNAME': 'CD Player',
+                'PCODE': 'PROD_04891',
+                'PINFO': 'Extended Warranty - 5 Years',
+                'PRICE': '82.3',
+                'PRICE_TYPE': 'GROSS',
+                'QTY': '7',
+                'VAT':'20'
+            },
+            {
+                'PNAME': 'Mobile Phone',
+                'PCODE': 'PROD_07409',
+                'PINFO': 'Dual SIM',
+                'PRICE': '1945.75',
+                'PRICE_TYPE': 'GROSS',
+                'QTY': '3',
+                'VAT':'20'
+            },
+            {
+                'PNAME': 'Laptop',
+                'PCODE': 'PROD_04965',
+                'PINFO': '17" Display',
+                'PRICE': '5230',
+                'PRICE_TYPE': 'GROSS',
+                'QTY': '1',
+                'VAT':'20'
+            },
+        ],
+        'PRICES_CURRENCY': 'RON',
+        'ORDER_SHIPPING': '0',
+        'DISCOUNT': '55',
+        'PAY_METHOD': 'CCVISAMC',
+        'DESTINATION_CITY': 'Bucuresti',
+        'DESTINATION_STATE': 'Bucuresti',
+        'DESTINATION_COUNTRY': 'RO',
+        'TESTORDER': 'TRUE',
+        'BILL_FNAME': 'Joe',
+        'BILL_LNAME': 'Doe',
+        'BILL_COUNTRYCODE': 'RO',
+        'BILL_PHONE': '+040000000000',
+        'BILL_EMAIL': 'joe.doe@gmail.com',
+    }, 'a9b838e17a04cc045699e5501f8f12c6')
 ])
 def test_calculate_correct_hash(payload, signature):
     payu_form = PayULiveUpdateForm(initial=payload)
@@ -120,5 +166,5 @@ def test_orders_parsing(payload, orders):
     (ValueHiddenInput().render('ORDER_10_0', 'a'), '<input name="ORDER_PNAME[]" type="hidden" value="a" />'),
     (ValueHiddenInput().render('ORDER_10_10', 'a'), '<input name="ORDER_10_10" type="hidden" value="a" />'),
 ])
-def test_value_input_hiddend(field, html):
+def test_value_input_hidden(field, html):
     assert field == html

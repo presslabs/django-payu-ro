@@ -127,6 +127,11 @@ class PayULiveUpdateForm(forms.Form):
 
     @property
     def signature(self):
+        hashable_fields = ['MERCHANT', 'ORDER_REF', 'ORDER_DATE',
+                           'ORDER_SHIPPING', 'PRICES_CURRENCY', 'DISCOUNT',
+                           'DESTINATION_CITY', 'DESTINATION_STATE',
+                           'DESTINATION_COUNTRY', 'PAY_METHOD',
+                           'SELECTED_INSTALLMENTS_NO', 'TESTORDER']
         result = u''
 
         # We need this hack since payU is not consistent with the order of fields in hash string
@@ -137,10 +142,12 @@ class PayULiveUpdateForm(forms.Form):
 
             field_value = field.value()
 
-            if (field.name not in ['ORDER', 'LANGUAGE'] and field_value) or \
-                (field.name == 'TESTORDER' and field_value == 'TRUE'):
-                result += u'%d%s' % (len(str(field_value)), field_value)
-                continue
+            if field.name in hashable_fields and field_value:
+                encoded_value = u'%d%s' % (len(str(field_value)), field_value)
+                if field.name == 'TESTORDER' and field_value == 'TRUE':
+                    suffix += encoded_value
+                else:
+                    result += encoded_value
 
             if field.name == 'ORDER':
                 for detail in PAYU_ORDER_DETAILS:
