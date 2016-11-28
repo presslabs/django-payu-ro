@@ -1,13 +1,14 @@
-django-payu
+django-payu [![BuildStatus](https://travis-ci.org/PressLabs/django-payu.svg?branch=payu-token)](https://travis-ci.org/PressLabs/django-payu)
 ===========
 
-Django integration for PayU (ex. ePayment). This is not a reference implementation. Only a subset of featues is implemented (partially IPN and LiveUpdate).
+Django integration for PayU (ex. ePayment). This is not a reference implementation.
+Only a subset of featues is implemented (partially IPN and LiveUpdate).
 
 
 LICENSE
 ===========
 
-Copyright 2012-2013 PressLabs SRL
+Copyright 2012-2016 PressLabs SRL
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

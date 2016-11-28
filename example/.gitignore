@@ -1,8 +1,7 @@
-.cache
-
 *.log
 *.pot
 *.pyc
 local_settings.py
+settings_local.py
 
-django_payu.egg-info
+db.sqlite3

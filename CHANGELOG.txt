@@ -1,0 +1,6 @@
+=== 1.0.0 ===
+- Implement PayU tokens
+- Improve project structure and development
+
+=== 0.0.1 ===
+- Initial release
