@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+<h2>ACME shop</h2>
+
+Thank you for your order. You can pay via Credit Card using these methods:
+<ul>
+    <li>
+        <a href="{% url 'live_update' %}">Live Update</a>
+    </li>
+    <li>
+        <a href="{% url 'tokens' %}">Tokens</a>
+    </li>
+</ul>
+
+{% endblock %}

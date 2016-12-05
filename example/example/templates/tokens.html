@@ -1,5 +1,11 @@
+{% extends 'base.html' %}
 {% load i18n %}
-<h2>Live Update example</h2>
+
+{% block extra_title %} - Token {% endblock %}
+
+{% block content %}
+
+<h2>Token payment example</h2>
 
 <p>
     Order Items
@@ -39,3 +45,5 @@
         {% trans "Pay by Card - using Live Update method" %}
     </button>
 </form>
+
+{% endblock %}
