@@ -4,39 +4,38 @@ from django.shortcuts import render
 
 
 def home(request):
-    payu_dict = {
-        'LU_ENBLE_TOKEN': '1',
+    order = [
+        {
+            'PNAME': 'CD Player',
+            'PCODE': 'PROD_04891',
+            'PINFO': 'Extended Warranty - 5 Years',
+            'PRICE': '82.3',
+            'PRICE_TYPE': 'GROSS',
+            'QTY': '7',
+            'VAT':'20'
+        },
+        {
+            'PNAME': 'Mobile Phone',
+            'PCODE': 'PROD_07409',
+            'PINFO': 'Dual SIM',
+            'PRICE': '1945.75',
+            'PRICE_TYPE': 'GROSS',
+            'QTY': '3',
+            'VAT':'20'
+        },
+        {
+            'PNAME': 'Laptop',
+            'PCODE': 'PROD_04965',
+            'PINFO': '17" Display',
+            'PRICE': '5230',
+            'PRICE_TYPE': 'GROSS',
+            'QTY': '1',
+            'VAT':'20'
+        }
+    ]
+    details = {
         'ORDER_REF': '789456123',
         'ORDER_DATE': '2016-10-05 11:12:27',
-        'ORDER': [
-            {
-                'PNAME': 'CD Player',
-                'PCODE': 'PROD_04891',
-                'PINFO': 'Extended Warranty - 5 Years',
-                'PRICE': '82.3',
-                'PRICE_TYPE': 'GROSS',
-                'QTY': '7',
-                'VAT':'20'
-            },
-            {
-                'PNAME': 'Mobile Phone',
-                'PCODE': 'PROD_07409',
-                'PINFO': 'Dual SIM',
-                'PRICE': '1945.75',
-                'PRICE_TYPE': 'GROSS',
-                'QTY': '3',
-                'VAT':'20'
-            },
-            {
-                'PNAME': 'Laptop',
-                'PCODE': 'PROD_04965',
-                'PINFO': '17" Display',
-                'PRICE': '5230',
-                'PRICE_TYPE': 'GROSS',
-                'QTY': '1',
-                'VAT':'20'
-            },
-        ],
         'PRICES_CURRENCY': 'RON',
         'ORDER_SHIPPING': '0',
         'DISCOUNT': '55',
@@ -53,6 +52,14 @@ def home(request):
         'BILL_EMAIL': 'joe.doe@gmail.com',
     }
 
+    payu_dict = details.copy()
+    payu_dict['ORDER'] = order
+
+    payu_form = PayULiveUpdateForm(initial=payu_dict)
+
     return render(request, 'simple_payment.html', {
-        'form': PayULiveUpdateForm(initial=payu_dict)
+        'form': payu_form,
+        'orders': order,
+        'details': details,
+        'order_hash': payu_form.fields['ORDER_HASH'].initial
     })
