@@ -85,7 +85,7 @@ class OrdersField(forms.MultiValueField):
 
 class PayULiveUpdateForm(forms.Form):
     MERCHANT = forms.CharField(widget=ValueHiddenInput, initial=MERCHANT)
-    LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial="1")
+    LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_DATE = forms.CharField(widget=ValueHiddenInput,
                                  initial=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

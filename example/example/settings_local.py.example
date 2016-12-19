@@ -2,3 +2,5 @@ from settings import *
 
 PAYU_MERCHANT = 'PAYUDEMO'
 PAYU_KEY = '1231234567890123'
+
+PAYU_CALLBACK_URL = 'http://payu-demo.ngrok.io'

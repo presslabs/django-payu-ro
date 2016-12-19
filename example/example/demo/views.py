@@ -1,6 +1,8 @@
+from django.conf import settings
+from django.shortcuts import render
+
 from payu.forms import PayULiveUpdateForm
 
-from django.shortcuts import render
 
 ORDER = [
     {
@@ -32,6 +34,7 @@ ORDER = [
     }
 ]
 
+
 DETAILS = {
     'ORDER_REF': '789456123',
     'ORDER_DATE': '2016-10-05 11:12:27',
@@ -43,14 +46,14 @@ DETAILS = {
     'DESTINATION_STATE': 'Bucuresti',
     'DESTINATION_COUNTRY': 'RO',
     'TESTORDER': 'TRUE',
-    'BACK_REF': 'http://localhost:8000/',
+    'AUTOMODE': '1',
+    'BACK_REF': settings.PAYU_CALLBACK_URL,
     'BILL_FNAME': 'Joe',
     'BILL_LNAME': 'Doe',
-    'BILL_COUNTRYCODE': 'RO',
-    'BILL_PHONE': '+040000000000',
-    'BILL_EMAIL': 'joe.doe@gmail.com',
+    'BILL_COUNTRYCODE': 'DE',
+    'BILL_PHONE': '+000000000000',
+    'BILL_EMAIL': 'joe.doe@acme.com',
 }
-
 
 
 def live_update(request):
@@ -68,15 +71,18 @@ def live_update(request):
 
 
 def tokens(request):
-    payu_dict = DETAILS.copy()
+    details = DETAILS.copy()
+    details['LU_ENABLE_TOKEN'] = '1'
+    details['LU_TOKEN_TYPE'] = 'PAY_BY_CLICK'
+
+    payu_dict = details.copy()
     payu_dict['ORDER'] = ORDER
-    payu_dict['LU_TOKEN'] = '1'
 
     payu_form = PayULiveUpdateForm(initial=payu_dict)
 
     return render(request, 'tokens.html', {
         'form': payu_form,
         'orders': ORDER,
-        'details': DETAILS,
+        'details': details,
         'order_hash': payu_form.fields['ORDER_HASH'].initial
     })

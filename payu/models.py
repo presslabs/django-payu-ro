@@ -34,6 +34,7 @@ class PayUIPN(models.Model):
     ORDERNO = models.CharField(max_length=6, verbose_name='Merchant order #')
     ORDERSTATUS = models.CharField(max_length=18, choices=PAYU_PAYMENT_STATUS,
                                    verbose_name='Status')
+
     PAYMETHOD_CODE = models.CharField(max_length=10, verbose_name='Payment method')
 
     response = models.TextField(blank=True)

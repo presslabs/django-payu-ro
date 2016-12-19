@@ -68,3 +68,24 @@ PAYU_PAYMENT_STATUS = (
     ('REVERSED', 'REVERSED'),
     ('REFUND', 'REFUND')
 )
+
+PAYU_IPN_FIELDS = ['SALEDATE', 'PAYMENTDATE', 'REFNO', 'REFNOEXT', 'ORDERNO',
+                   'ORDERSTATUS', 'PAYMETHOD', 'PAYMETHOD_CODE', 'FIRSTNAME',
+                   'LASTNAME', 'IDENTITY_NO', 'IDENTITY_ISSUER', 'CARD_TYPE',
+                   'IDENTITY_CNP', 'COMPANY', 'REGISTRATIONNUMBER',
+                   'FISCALCODE', 'CBANKNAME', 'CBANKACCOUNT', 'ADDRESS1',
+                   'ADDRESS2', 'CITY', 'STATE', 'ZIPCODE', 'COUNTRY',
+                   'COUNTRY_CODE', 'PHONE', 'FAX', 'CUSTOMEREMAIL',
+                   'FIRSTNAME_D', 'LASTNAME_D', 'COMPANY_D', 'ADDRESS1_D',
+                   'ADDRESS2_D', 'CITY_D', 'STATE_D', 'ZIPCODE_D', 'COUNTRY_D',
+                   'COUNTRY_D_CODE', 'PHONE_D', 'EMAIL_D', 'IPADDRESS',
+                   'IPCOUNTRY', 'COMPLETE_DATE', 'CURRENCY', 'LANGUAGE',
+                   'IPN_PID[]', 'IPN_PNAME[]', 'IPN_PCODE[]', 'IPN_INFO[]',
+                   'IPN_QTY[]', 'IPN_PRICE[]', 'IPN_VAT[]', 'IPN_VER[]',
+                   'IPN_DISCOUNT[]', 'IPN_PROMONAME[]', 'IPN_PROMOCODE[]',
+                   'IPN_ORDER_COSTS[]', 'IPN_REC_CURRENT_ITERATION_NO[]',
+                   'IPN_REC_ORIGINAL_REFNO[]', 'IPN_REC_INTERVAL[]',
+                   'IPN_REC_EXPIRATION_DATE[]', 'IPN_REC_MULTIPLIER[]',
+                   'IPN_DELIVEREDCODES[]', 'IPN_DOWNLOAD_LINK', 'IPN_TOTAL[]',
+                   'IPN_TOTALGENERAL', 'IPN_SHIPPING', 'IPN_REFERRER',
+                   'IPN_GLOBALDISCOUNT', 'IPN_COMMISSION', 'IPN_DATE']

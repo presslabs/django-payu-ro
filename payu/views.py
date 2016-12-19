@@ -20,11 +20,11 @@ from datetime import datetime
 
 import pytz
 
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from payu.conf import MERCHANT_KEY
+from payu.conf import MERCHANT_KEY, PAYU_IPN_FIELDS
 from payu.models import PayUIPN, Token
 from payu.forms import PayUIPNForm
 
@@ -36,23 +36,29 @@ def ipn(request):
     error = None
     ipn_form = PayUIPNForm(request.POST)
 
-    validation_hash = "".join(['%s%s' % (len(field), field)
-                               for field in request.POST.values()
-                               if field != 'HASH'
-                              ])
+    validation_hash = ''
+    for field in PAYU_IPN_FIELDS:
+        if field not in request.POST:
+            continue
+
+        field_value = request.POST.getlist(field)
+
+        validation_hash += ''.join(['%s%s' % (len(value), value)
+                                    for value in field_value])
+
     expected_hash = hmac.new(MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
     request_hash = request.POST.get('HASH', '')
 
     if request_hash != expected_hash:
-        error = 'Invalid hash %s. Hash string \n%s' % (request_hash, validation_hash)
+        error = 'Invalid hash %s. Hash string \n%s' % (request_hash, expected_hash)
     else:
-        if ipn.is_valid():
+        if ipn_form.is_valid():
             try:
-                ipn_obj = ipn.save(commit=False)
+                ipn_obj = ipn_form.save(commit=False)
             except Exception, exception:
                 error = "Exception while processing. (%s)" % exception
         else:
-            error = "Invalid form. (%s)" % ipn.errors
+            error = "Invalid form. (%s)" % ipn_form.errors
 
     if not ipn_obj:
         ipn_obj = PayUIPN()
