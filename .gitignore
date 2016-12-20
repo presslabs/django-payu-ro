@@ -3,6 +3,7 @@
 *.log
 *.pot
 *.pyc
+.coverage
 local_settings.py
 
 django_payu.egg-info
