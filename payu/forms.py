@@ -232,3 +232,18 @@ class PayUIPNForm(forms.ModelForm):
     class Meta:
         exclude = []
         model = PayUIPN
+
+    def __init__(self, data, *args, **kwargs):
+        form_data = data.copy()
+
+        for field in data:
+            if field.endswith("[]"):
+                form_data[field[:-2]] = ",".join([value
+                                                  for value in data.getlist(field)
+                                                  if value.strip()
+                                                 ])
+
+            if field == 'IPN_DATE':
+                form_data[field] = datetime.strptime(data[field], "%Y%m%d%H%M%S")
+
+        super(PayUIPNForm, self).__init__(form_data)

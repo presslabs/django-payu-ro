@@ -29,12 +29,14 @@ from payu.models import PayUIPN, Token
 from payu.forms import PayUIPNForm
 
 
-@require_POST
+# @require_POST
 @csrf_exempt
 def ipn(request):
     ipn_obj = None
     error = None
-    ipn_form = PayUIPNForm(request.POST)
+
+    form_data = request.POST
+    ipn_form = PayUIPNForm(form_data)
 
     validation_hash = ''
     for field in PAYU_IPN_FIELDS:
@@ -64,7 +66,8 @@ def ipn(request):
         ipn_obj = PayUIPN()
 
     # Set query params and sender's IP address
-    ipn_obj.initialize(request)
+    ipn_obj.response = getattr(request, request.method).urlencode()
+    ipn_obj.ip_address = request.META.get('REMOTE_ADDR', '')
 
     if error:
         # We save errors in the error field
