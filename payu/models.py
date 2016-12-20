@@ -297,11 +297,19 @@ class PayUIPN(models.Model):
             payment_flagged.send(sender=self)
             return
 
-        if self.ORDERSTATUS in ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'TEST']:
+        if self.is_authorized:
             payment_authorized.send(sender=self)
 
-        if self.ORDERSTATUS == 'COMPLETE':
+        if self.is_completed:
             payment_completed.send(sender=self)
+
+    @property
+    def is_authorized(self):
+        return self.ORDERSTATUS in ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'TEST']
+
+    @property
+    def is_completed(self):
+        return self.ORDERSTATUS == 'COMPLETE'
 
     def __unicode__(self):
         return u'<IPN: %s>' % self.REFNO
