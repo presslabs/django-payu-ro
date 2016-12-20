@@ -1,6 +1,10 @@
-import pytest
+from datetime import datetime
 
-from payu.forms import PayULiveUpdateForm, ValueHiddenInput
+import pytest
+from django.http import QueryDict
+
+from payu.forms import (PayULiveUpdateForm, ValueHiddenInput, OrderWidget,
+                        PayUIPNForm)
 
 
 @pytest.mark.parametrize("payload,signature", [
@@ -168,3 +172,45 @@ def test_orders_parsing(payload, orders):
 ])
 def test_value_input_hidden(field, html):
     assert field == html
+
+
+@pytest.mark.parametrize("decompressed_value,expected_value", [
+    (OrderWidget().decompress({'n': 'test', 'm': 20}),
+     ['', '', '', '', '', '', '', '', '']),
+    (OrderWidget().decompress({'PNAME': 'test', 'VAT': 20}),
+     ['test', '', '', '', '', '', '', 20, '']),
+    (OrderWidget().decompress({'PNAME': '1', 'VAT': 20, 'PGROUP': '2',
+                               'PCODE': '3', 'PINFO': '4', 'PRICE': '5'}),
+     ['1', '2', '3', '4', '5', '', '', 20, ''])
+])
+def test_decompress_order_widget(decompressed_value, expected_value):
+    assert decompressed_value == expected_value
+
+
+@pytest.mark.parametrize("form_data,expected", [
+    ({}, lambda form: not form.is_valid()),
+    ({'REFNO': 1}, lambda form: not form.is_valid()),
+    ({'REFNO': 1, 'REFNOEXT': 1}, lambda form: not form.is_valid()),
+    ({'REFNO': 1, 'REFNOEXT': 1, 'ORDERNO': 1, 'ORDERSTATUS': 'TEST',
+      'HASH': 'aaa', 'PAYMETHOD_CODE': 'CCVMAC'}, lambda form: form.is_valid()),
+])
+def test_payu_model_form_validation(form_data, expected):
+    assert expected(PayUIPNForm(form_data))
+
+
+def test_payu_model_form_date_conversion():
+    form = PayUIPNForm({'IPN_DATE': '20161220170852'})
+    assert form['IPN_DATE'].value() == datetime.strptime('20161220170852',
+                                                         '%Y%m%d%H%M%S')
+
+
+@pytest.mark.parametrize("form_data,expected", [
+    (QueryDict('IPN_PID[]=1&IPN_PID[]=2&IPN_PID[]=3'), '1,2,3'),
+    (QueryDict('IPN_PID=1'), '1'),
+    (QueryDict('IPN_PID[]=1'), '1'),
+    (QueryDict('IPN_PID[]='), ''),
+    (QueryDict('IPN_PID[=1'), None)
+])
+def test_payu_model_form_list_processing(form_data, expected):
+    form = PayUIPNForm(form_data)
+    assert form['IPN_PID'].value() == expected

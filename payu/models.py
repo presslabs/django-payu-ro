@@ -23,17 +23,6 @@ from payu.conf import PAYU_PAYMENT_STATUS
 
 
 class PayUIPN(models.Model):
-    LIST_FIELDS = ['IPN_PID', 'IPN_PNAME', 'IPN_PCODE', 'IPN_INFO', 'IPN_QTY',
-                   'IPN_PRICE', 'IPN_VAT', 'IPN_VER', 'IPN_DISCOUNT',
-                   'IPN_PROMONAME', 'IPN_PROMOCODE', 'IPN_LICENSE_PROD',
-                   'IPN_LICENSE_TYPE', 'IPN_LICENSE_REF', 'IPN_LICENSE_EXP',
-                   'IPN_DELIVEREDCODES', 'IPN_BUNDLE_DETAILS',
-                   'IPN_BUNDLE_DELIVEREDCODES', 'IPN_ORDER_COSTS', 'IPN_TOTAL',
-                   'CUSTOM_FIELDS', 'IPN_PRODUCT_OPTIONS',
-                   'IPN_REC_CURRENT_ITERATION_NO', 'IPN_REC_ORIGINAL_REFNO',
-                   'IPN_REC_INTERVAL', 'IPN_REC_EXPIRATION_DATE',
-                   'IPN_REC_MULTIPLIER']
-
     REFNO = models.CharField(max_length=9, verbose_name='ePayment reference')
     REFNOEXT = models.CharField(max_length=100, verbose_name='Merchant reference')
     ORDERNO = models.CharField(max_length=6, verbose_name='Merchant order #')
