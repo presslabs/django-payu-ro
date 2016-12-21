@@ -287,7 +287,9 @@ class PayUIPN(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def set_flag(self, info):
-        """Sets a flag on the transaction and also sets a reason."""
+        """
+        Sets a flag on the transaction and also sets a reason.
+        """
 
         self.flag = True
         self.flag_info += info
