@@ -6,6 +6,7 @@ from django.conf import settings
 
 settings.configure(
     DEBUG=True,
+    ROOT_URLCONF='payu.urls',
     DATABASES={
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

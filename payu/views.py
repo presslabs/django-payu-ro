@@ -22,14 +22,14 @@ import pytz
 
 from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 
 from payu.conf import MERCHANT_KEY, PAYU_IPN_FIELDS
 from payu.models import PayUIPN, Token
 from payu.forms import PayUIPNForm
 
 
-# @require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_exempt
 def ipn(request):
     ipn_obj = None
