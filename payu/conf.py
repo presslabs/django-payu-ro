@@ -18,19 +18,28 @@ from django.conf import settings
 
 
 class ConfigurationMeta(type):
-    instance = None
+    _instance = None
 
-    def __getattr__(cls, arg):
-        if not cls.instance:
-            cls.instance = cls.__call__()
+    def __getattribute__(cls, arg):
+        if arg == '_instance':
+            return super(ConfigurationMeta, cls).__getattribute__(arg)
 
-        return getattr(cls.instance, arg)
+        instance = cls._instance
+        if not instance:
+            instance = cls()
+            cls._instance = instance
+
+        return getattr(instance, arg)
 
     def __setattr__(cls, arg, value):
-        if not cls.instance:
-            cls.instance = cls.__call__()
+        if arg == '_instance':
+            super(ConfigurationMeta, cls).__setattr__(arg, value)
+            return
 
-        setattr(cls.instance, arg, value)
+        if not cls._instance:
+            cls._instance = cls()
+
+        setattr(cls._instance, arg, value)
 
 
 class Configuration(object):
