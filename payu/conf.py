@@ -16,11 +16,29 @@
 #
 from django.conf import settings
 
-TEST = getattr(settings, "PAYU_TEST", True)
+
+class ConfigurationMeta(type):
+    instance = None
+
+    def __getattr__(cls, arg):
+        if not cls.instance:
+            cls.instance = cls.__call__()
+
+        return getattr(cls.instance, arg)
+
+    def __setattr__(cls, arg, value):
+        if not cls.instance:
+            cls.instance = cls.__call__()
+
+        setattr(cls.instance, arg, value)
 
 
-MERCHANT = settings.PAYU_MERCHANT
-MERCHANT_KEY = settings.PAYU_KEY
+class Configuration(object):
+    __metaclass__ = ConfigurationMeta
+
+    MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
+    MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
+    TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', True)
 
 
 PAYU_ORDER_DETAILS = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
