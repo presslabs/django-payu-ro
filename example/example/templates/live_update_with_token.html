@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_title %} - Token {% endblock %}
+
+{% block content %}
+
+<h3>Create a new payment with ORDER_REF: {{ details.ORDER_REF }}</h3>
+
+<form action="https://secure.payu.ro/order/lu.php" method="post">
+    {{ form }}
+    <button type="submit" class="btn btn-primary pay"><i class="icon-chevron-right"></i>
+        {% trans "Pay by Card - using Live Update method" %}
+    </button>
+</form>
+
+{% endblock %}

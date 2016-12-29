@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.shortcuts import render
+from django.core.urlresolvers import reverse
 
+from payu.models import PayUPaymentToken, PayUIPN
 from payu.forms import PayULiveUpdateForm
 
 
@@ -70,19 +72,28 @@ def live_update(request):
     })
 
 
-def tokens(request):
+def live_update_with_token(request):
     details = DETAILS.copy()
     details['LU_ENABLE_TOKEN'] = '1'
-    details['LU_TOKEN_TYPE'] = 'PAY_BY_CLICK'
 
     payu_dict = details.copy()
     payu_dict['ORDER'] = ORDER
 
     payu_form = PayULiveUpdateForm(initial=payu_dict)
 
-    return render(request, 'tokens.html', {
+    return render(request, 'live_update_with_token.html', {
         'form': payu_form,
         'orders': ORDER,
         'details': details,
         'order_hash': payu_form.fields['ORDER_HASH'].initial
+    })
+
+
+def create_token_api_v2(request):
+    ipn = PayUIPN.objects.filter(REFNOEXT=DETAILS['ORDER_REF']).last()
+    token = PayUPaymentToken.request(ipn.REFNO)
+
+    return render(request, 'create_token_api_v2.html', {
+        'token': token,
+        'ref': ipn.REFNO
     })

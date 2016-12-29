@@ -17,12 +17,17 @@
 from django.conf import settings
 
 
-class ConfigurationMeta(type):
+class MagicSingleton(type):
+    """
+    Evil singleton class used to set attributes of a single object.
+    Useful for global mutable configuration (also evil).
+    """
+
     _instance = None
 
     def __getattribute__(cls, arg):
         if arg == '_instance':
-            return super(ConfigurationMeta, cls).__getattribute__(arg)
+            return super(MagicSingleton, cls).__getattribute__(arg)
 
         instance = cls._instance
         if not instance:
@@ -33,7 +38,7 @@ class ConfigurationMeta(type):
 
     def __setattr__(cls, arg, value):
         if arg == '_instance':
-            super(ConfigurationMeta, cls).__setattr__(arg, value)
+            super(MagicSingleton, cls).__setattr__(arg, value)
             return
 
         if not cls._instance:
@@ -43,12 +48,15 @@ class ConfigurationMeta(type):
 
 
 class Configuration(object):
-    __metaclass__ = ConfigurationMeta
+    __metaclass__ = MagicSingleton
 
     MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
     MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
     TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', True)
 
+
+PAYU_MERCHANT_URL = getattr(settings, 'PAYU_MERCHANT_URL',
+                            'https://secure.payu.ro/order/token/v2/merchantToken/')
 
 PAYU_ORDER_DETAILS = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
                       'QTY', 'VAT', 'VER']

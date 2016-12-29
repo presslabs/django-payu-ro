@@ -15,7 +15,7 @@
 #    limitations under the License.
 from django.contrib import admin
 
-from payu.models import PayUIPN, Token
+from payu.models import PayUIPN, IPNToken
 
 
 class PayUIPNAdmin(admin.ModelAdmin):
@@ -30,4 +30,4 @@ class LUTokenAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PayUIPN, PayUIPNAdmin)
-admin.site.register(Token, LUTokenAdmin)
+admin.site.register(IPNToken, LUTokenAdmin)

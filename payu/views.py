@@ -25,12 +25,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from payu.conf import Configuration, PAYU_IPN_FIELDS
-from payu.models import PayUIPN, Token
+from payu.models import PayUIPN, IPNToken
 from payu.forms import PayUIPNForm
 
 
-@require_http_methods(["GET", "POST"])
 @csrf_exempt
+@require_http_methods(["GET", "POST"])
 def ipn(request):
     ipn_obj = None
     error = None
@@ -82,7 +82,7 @@ def ipn(request):
     IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
 
     if all([IPN_CC_TOKEN, IPN_CC_MASK, IPN_CC_EXP_DATE]):
-        Token.objects.create(
+        IPNToken.objects.create(
             IPN_CC_TOKEN=IPN_CC_TOKEN,
             IPN_CC_MASK=IPN_CC_MASK,
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
