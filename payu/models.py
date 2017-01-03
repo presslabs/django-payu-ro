@@ -57,7 +57,7 @@ class PayUIPN(models.Model):
     IDENTITY_ISSUER = models.CharField(blank=True, null=True, max_length=100,
                                        help_text='IDENTITY_NO ID Card \
                                        issuer authority ')
-    CARD_TYPE = models.CharField(blank=True, null=True, max_length=10,
+    CARD_TYPE = models.CharField(blank=True, null=True, max_length=100,
                                  help_text='Used credit card type. \
                                  Ex: "Visa" or "MasterCard"')
     IDENTITY_CNP = models.CharField(blank=True, null=True, max_length=13,

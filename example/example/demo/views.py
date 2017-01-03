@@ -41,8 +41,9 @@ DETAILS = {
     'ORDER_REF': '789456123',
     'ORDER_DATE': '2016-10-05 11:12:27',
     'PRICES_CURRENCY': 'RON',
+    'CURRENCY': 'RON',
     'ORDER_SHIPPING': '0',
-    'DISCOUNT': '55',
+    'DISCOUNT': '0',
     'PAY_METHOD': 'CCVISAMC',
     'DESTINATION_CITY': 'Bucuresti',
     'DESTINATION_STATE': 'Bucuresti',
@@ -50,11 +51,11 @@ DETAILS = {
     'TESTORDER': 'TRUE',
     'AUTOMODE': '1',
     'BACK_REF': settings.PAYU_CALLBACK_URL,
-    'BILL_FNAME': 'Joe',
-    'BILL_LNAME': 'Doe',
-    'BILL_COUNTRYCODE': 'DE',
+    'BILL_FNAME': 'VLAD',
+    'BILL_LNAME': 'TEMIAN',
+    'BILL_COUNTRYCODE': 'RO',
     'BILL_PHONE': '+000000000000',
-    'BILL_EMAIL': 'joe.doe@acme.com',
+    'BILL_EMAIL': 'vladtemian@gmail.com',
 }
 
 
@@ -74,10 +75,16 @@ def live_update(request):
 
 def live_update_with_token(request):
     details = DETAILS.copy()
+    details.pop('TESTORDER')
+    # details['TESTORDER'] = 'FALSE'
     details['LU_ENABLE_TOKEN'] = '1'
 
     payu_dict = details.copy()
-    payu_dict['ORDER'] = ORDER
+    payu_dict['ORDER'] = ORDER[:1]
+    payu_dict['ORDER'][0]['PRICE'] = 1
+    payu_dict['ORDER'][0]['QTY'] = 1
+
+    print details
 
     payu_form = PayULiveUpdateForm(initial=payu_dict)
 
