@@ -15,7 +15,9 @@ urlpatterns += [
     url(r'^obtain-alu-token/$', view=demo.obtain_alu_token,
         name='obtain_alu_token'),
     url(r'^alu-payments/', view=demo.ALUPayments.as_view(),
-        name='alu_payments')
+        name='alu_payments'),
+    url(r'^debug/', view=demo.debug,
+        name='debug')
 ]
 
 urlpatterns += patterns('',

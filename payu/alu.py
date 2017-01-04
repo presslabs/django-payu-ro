@@ -1,15 +1,28 @@
 import hmac
 
-from payu.conf import PAYU_MERCHANT_KEY
+import requests
+
+from payu.conf import PAYU_MERCHANT_KEY, PAYU_MERCHANT, PAYU_ALU_URL
 
 
 class ALUPayment(object):
-    def __init__(self, order, alu_token, merchant_key=PAYU_MERCHANT_KEY):
+    def __init__(self, order, alu_token, merchant_key=PAYU_MERCHANT_KEY,
+                 merchant=PAYU_MERCHANT):
+
+        order['MERCHANT'] = merchant
         self.order = self._build_order(order, alu_token)
+
         self.merchant_key = merchant_key
+        self.merchant = merchant
 
     def pay(self):
-        return self.signature
+        order = self.order
+        order['ORDER_HASH'] = self.signature
+
+        from pprint import pprint
+        pprint(order)
+
+        return requests.post(PAYU_ALU_URL, data=order)
 
     @property
     def signature(self):
@@ -21,6 +34,7 @@ class ALUPayment(object):
     def _build_order(self, order, alu_token):
         final_order = self._parse_orders(order.pop('ORDER'))
         final_order['CC_TOKEN'] = alu_token.IPN_CC_TOKEN
+        final_order.update(**order)
 
         return final_order
 

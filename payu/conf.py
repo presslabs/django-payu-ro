@@ -21,8 +21,8 @@ PAYU_MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
 PAYU_MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
 PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 
-PAYU_MERCHANT_URL = getattr(settings, 'PAYU_MERCHANT_URL',
-                            'https://secure.payu.ro/order/token/v2/merchantToken/')
+PAYU_ALU_URL = getattr(settings, 'PAYU_ALU_URL',
+                       'https://secure.payu.ro/order/alu/v3')
 
 PAYU_ORDER_DETAILS = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
                       'QTY', 'VAT', 'VER']

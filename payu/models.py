@@ -24,7 +24,7 @@ from django.db import models
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
-from payu.conf import PAYU_PAYMENT_STATUS, PAYU_MERCHANT_URL
+from payu.conf import PAYU_PAYMENT_STATUS
 
 
 class PayUIPN(models.Model):

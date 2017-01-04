@@ -42,7 +42,7 @@ ORDER = [
 
 DETAILS = {
     'ORDER_REF': '789456123',
-    'ORDER_DATE': '2016-10-05 11:12:27',
+    'ORDER_DATE': '2017-01-04 12:08:40',
     'PRICES_CURRENCY': 'RON',
     'CURRENCY': 'RON',
     'ORDER_SHIPPING': '0',
@@ -97,6 +97,12 @@ def obtain_alu_token(request):
     })
 
 
+def debug(request):
+    print request.POST
+    from pprint import pprint as pp
+    pp(request.POST)
+
+
 class ALUPayments(View):
     def get(self, request, *args, **kwargs):
         details = DETAILS.copy()
@@ -127,7 +133,11 @@ class ALUPayments(View):
         order['ORDER'][0]['PRICE'] = 1
         order['ORDER'][0]['QTY'] = 1
 
+        order['ORDER_TIMEOUT'] = 10 * 60
+        order['ORDER_REF'] = '789456124'
+
         alu_token = ALUToken.objects.get(pk=request.POST['alu-token'])
         payment = ALUPayment(order, alu_token)
 
-        return HttpResponse(payment.pay())
+        respone = payment.pay()
+        return HttpResponse(respone.content)
