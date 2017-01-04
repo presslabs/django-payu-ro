@@ -326,7 +326,7 @@ class PayUIPN(models.Model):
         db_table = 'payu_ipn'
 
 
-class ALUToken(models.Model):
+class IPNCCToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
     # same value as IPN's REFNO

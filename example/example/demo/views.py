@@ -6,7 +6,7 @@ from django.views.generic import View
 
 from payu.alu import ALUPayment
 from payu.forms import PayULiveUpdateForm
-from payu.models import PayUIPN, ALUToken
+from payu.models import PayUIPN, IPNCCToken
 
 
 ORDER = [
@@ -116,7 +116,7 @@ class ALUPayments(View):
         ipns = [ipn.pk for ipn in
                 list(PayUIPN.objects.filter(REFNOEXT=order['ORDER_REF']))]
 
-        alu_tokens = ALUToken.objects.filter(ipn_id__in=ipns)
+        alu_tokens = IPNCCToken.objects.filter(ipn_id__in=ipns)
 
         return render(request, 'choose_alu_token.html', {
             'orders': order['ORDER'],
@@ -136,7 +136,7 @@ class ALUPayments(View):
         order['ORDER_TIMEOUT'] = 10 * 60
         order['ORDER_REF'] = '789456124'
 
-        alu_token = ALUToken.objects.get(pk=request.POST['alu-token'])
+        alu_token = IPNCCToken.objects.get(pk=request.POST['alu-token'])
         payment = ALUPayment(order, alu_token)
 
         respone = payment.pay()
