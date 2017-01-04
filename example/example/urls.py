@@ -12,10 +12,12 @@ urlpatterns = [
 
 urlpatterns += [
     url(r'^live-update/$', view=demo.live_update, name='live_update'),
-    url(r'^obtain-alu-token/$', view=demo.obtain_alu_token,
-        name='obtain_alu_token'),
+    url(r'^obtain-ipn-token/$', view=demo.obtain_ipn_token,
+        name='obtain_ipn_token'),
     url(r'^alu-payments/', view=demo.ALUPayments.as_view(),
         name='alu_payments'),
+    url(r'^token-payments/', view=demo.TokenPayments.as_view(),
+        name='token_payments'),
     url(r'^debug/', view=demo.debug,
         name='debug')
 ]

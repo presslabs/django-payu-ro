@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.views.generic import View
 
-from payu.alu import ALUPayment
+from payu.payments import ALUPayment, TokenPayment
 from payu.forms import PayULiveUpdateForm
 from payu.models import PayUIPN, IPNCCToken
 
@@ -76,7 +76,7 @@ def live_update(request):
     })
 
 
-def obtain_alu_token(request):
+def obtain_ipn_token(request):
     details = DETAILS.copy()
 
     details.pop('TESTORDER')
@@ -89,7 +89,7 @@ def obtain_alu_token(request):
 
     payu_form = PayULiveUpdateForm(initial=payu_dict)
 
-    return render(request, 'live_update_with_token.html', {
+    return render(request, 'obtain_ipn_token.html', {
         'form': payu_form,
         'orders': ORDER,
         'details': details,
@@ -141,3 +141,11 @@ class ALUPayments(View):
 
         respone = payment.pay()
         return HttpResponse(respone.content)
+
+
+class TokenPayments(View):
+    def get(self, request, *args, **kwargs):
+        return HttpResponse("ok")
+
+    def post(self, request, *args, **kwargs):
+        return HttpResponse("ok")
