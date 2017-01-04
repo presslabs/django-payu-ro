@@ -75,16 +75,14 @@ def live_update(request):
 
 def live_update_with_token(request):
     details = DETAILS.copy()
+
     details.pop('TESTORDER')
-    # details['TESTORDER'] = 'FALSE'
     details['LU_ENABLE_TOKEN'] = '1'
 
     payu_dict = details.copy()
     payu_dict['ORDER'] = ORDER[:1]
     payu_dict['ORDER'][0]['PRICE'] = 1
     payu_dict['ORDER'][0]['QTY'] = 1
-
-    print details
 
     payu_form = PayULiveUpdateForm(initial=payu_dict)
 

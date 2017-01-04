@@ -23,7 +23,7 @@ import requests
 from django.db import models
 
 from payu.signals import (payment_completed, payment_authorized,
-                          payment_flagged, token_created)
+                          payment_flagged, alu_token_created)
 from payu.conf import PAYU_PAYMENT_STATUS, PAYU_MERCHANT_URL, Configuration
 
 
@@ -326,7 +326,7 @@ class PayUIPN(models.Model):
         db_table = 'payu_ipn'
 
 
-class IPNToken(models.Model):
+class ALUToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
     # same value as IPN's REFNO
@@ -338,7 +338,7 @@ class IPNToken(models.Model):
     IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
 
     def send_signals(self):
-        token_created.send(sender=self)
+        alu_token_created.send(sender=self)
 
     def __unicode__(self):
         return u'<Token: %s>' % self.IPN_CC_TOKEN

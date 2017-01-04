@@ -52,7 +52,7 @@ class Configuration(object):
 
     MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
     MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
-    TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', True)
+    TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 
 
 PAYU_MERCHANT_URL = getattr(settings, 'PAYU_MERCHANT_URL',

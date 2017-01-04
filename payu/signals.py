@@ -25,4 +25,4 @@ payment_authorized = Signal()
 payment_flagged = Signal()
 
 # Sent whenever a token is created
-token_created = Signal()
+alu_token_created = Signal()

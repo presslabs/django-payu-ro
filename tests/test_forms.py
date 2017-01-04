@@ -57,7 +57,7 @@ from payu.forms import (PayULiveUpdateForm, ValueHiddenInput, OrderWidget,
         'PRICES_CURRENCY': 'RON',
         'CURRENCY': 'RON',
         'LANGUAGE': 'RO',
-        'TEST': True,
+        'TESTORDER': 'TRUE',
         'PAY_METHOD': 'CCVISAMC'
     }, 'e327589caadf200996521a4d0b433ef5'),
     ({
