@@ -39,7 +39,7 @@
     <form action="{% url 'alu_payments' %}" method="POST">
         {% csrf_token %}
 
-        <select name="alu-token">
+        <select name="token">
             {% for token in alu_tokens %}
                 <option value={{ token.pk }}>{{ token.IPN_CC_TOKEN }}</option>
             {% endfor %}

@@ -24,6 +24,9 @@ PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 PAYU_ALU_URL = getattr(settings, 'PAYU_ALU_URL',
                        'https://secure.payu.ro/order/alu/v3')
 
+PAYU_TOKENS_URL = getattr(settings, 'PAYU_TOKENS_URL',
+                          'https://secure.payu.ro/order/tokens/')
+
 PAYU_ORDER_DETAILS = ['PNAME', 'PGROUP', 'PCODE', 'PINFO', 'PRICE', 'PRICE_TYPE',
                       'QTY', 'VAT', 'VER']
 

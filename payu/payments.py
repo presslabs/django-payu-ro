@@ -1,8 +1,10 @@
 import hmac
+import datetime
 
 import requests
 
-from payu.conf import PAYU_MERCHANT_KEY, PAYU_MERCHANT, PAYU_ALU_URL
+from payu.conf import (PAYU_MERCHANT_KEY, PAYU_MERCHANT,
+                       PAYU_ALU_URL, PAYU_TOKENS_URL)
 
 
 class BasePayment(object):
@@ -10,7 +12,7 @@ class BasePayment(object):
                  merchant=PAYU_MERCHANT):
 
         self.order = order
-        self.token = order
+        self.token = token
         self.merchant_key = merchant_key
         self.merchant = merchant
 
@@ -19,14 +21,27 @@ class BasePayment(object):
 
     def get_signature(self, payload):
         sorted_payload = sorted(payload.items(), key=lambda item: item[0])
+        print sorted_payload
         parameters = "".join(["%s%s" % (len(str(parameter[1])), parameter[1])
                               for parameter in sorted_payload])
         return hmac.new(self.merchant_key, parameters).hexdigest()
 
 
 class TokenPayment(BasePayment):
-    pass
+    def pay(self):
+        payload = {
+            'REF_NO': self.token,
+            'METHOD': 'TOKEN_NEWSALE',
+            'MERCHANT': self.merchant,
+            'TIMESTAMP': datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+        }
+        payload.update(self.order)
+        payload['SIGN'] = self.get_signature(payload)
 
+        from pprint import pprint
+        pprint(payload)
+
+        return requests.post(PAYU_TOKENS_URL, data=payload).content
 
 class ALUPayment(BasePayment):
     def pay(self):
@@ -132,7 +147,7 @@ class ALUPayment(object):
         from pprint import pprint
         pprint(order)
 
-        return requests.post(PAYU_ALU_URL, data=order)
+        return requests.post(PAYU_ALU_URL, data=order).content
 
     @property
     def signature(self):

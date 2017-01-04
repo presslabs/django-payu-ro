@@ -136,16 +136,46 @@ class ALUPayments(View):
         order['ORDER_TIMEOUT'] = 10 * 60
         order['ORDER_REF'] = '789456124'
 
-        alu_token = IPNCCToken.objects.get(pk=request.POST['alu-token'])
-        payment = ALUPayment(order, alu_token)
+        token = IPNCCToken.objects.get(pk=request.POST['token'])
+        payment = ALUPayment(order, token.IPN_CC_TOKEN)
 
         respone = payment.pay()
-        return HttpResponse(respone.content)
+        return HttpResponse(respone)
 
 
 class TokenPayments(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponse("ok")
+        ipns = [ipn.pk for ipn in
+                list(PayUIPN.objects.filter(REFNOEXT=DETAILS['ORDER_REF']))]
+
+        tokens = IPNCCToken.objects.filter(ipn_id__in=ipns)
+
+        return render(request, 'choose_token.html', {
+            'initial_order_ref': DETAILS['ORDER_REF'],
+            'tokens': tokens
+        })
 
     def post(self, request, *args, **kwargs):
-        return HttpResponse("ok")
+        token = IPNCCToken.objects.get(pk=request.POST['token'])
+
+        payment = TokenPayment({
+            "AMOUNT": 1,
+            "CURRENCY": "RON",
+            "BILL_ADDRESS": "address 1",
+            "BILL_CITY": "Iasi",
+            "BILL_EMAIL": "john@doe.com",
+            "BILL_FNAME": "John",
+            "BILL_LNAME": "Doe",
+            "BILL_PHONE": "0243236298",
+            "DELIVERY_ADDRESS": "address 2",
+            "DELIVERY_CITY": "Suceava",
+            "DELIVERY_EMAIL": "john@doe.com",
+            "DELIVERY_EMAIL": "john@doe.com",
+            "DELIVERY_FNAME": "John",
+            "DELIVERY_LNAME": "Doe",
+            "DELIVERY_PHONE": "0243236298",
+            "EXTERNAL_REF": "25787sa1",
+        }, token.IPN_CC_TOKEN)
+        result = payment.pay()
+
+        return HttpResponse(result)

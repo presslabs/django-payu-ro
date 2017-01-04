@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_title %} - Choose IPNCC token {% endblock %}
+
+{% block content %}
+
+    <h2>Choose IPNCC token</h2>
+
+    Choose a token for order: {{ initial_order_ref }}
+    <form action="{% url 'token_payments' %}" method="POST">
+        {% csrf_token %}
+
+        <select name="token">
+            {% for token in tokens %}
+                <option value={{ token.pk }}>{{ token.IPN_CC_TOKEN }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Pay</button>
+    </form>
+
+{% endblock %}
