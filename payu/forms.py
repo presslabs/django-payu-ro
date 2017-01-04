@@ -22,7 +22,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from payu.models import PayUIPN
-from payu.conf import (Configuration,
+from payu.conf import (PAYU_MERCHANT, PAYU_MERCHANT_KEY, PAYU_TEST_TRANSACTION,
                        PAYU_ORDER_DETAILS, PAYU_ORDER_DETAILS_DEFAULTS,
                        PAYU_DATE_FORMATS, PAYU_CURRENCIES,
                        PAYU_PAYMENT_METHODS, PAYU_LANGUAGES)
@@ -85,7 +85,7 @@ class OrdersField(forms.MultiValueField):
 
 class PayULiveUpdateForm(forms.Form):
     MERCHANT = forms.CharField(widget=ValueHiddenInput,
-                               initial=Configuration.MERCHANT)
+                               initial=PAYU_MERCHANT)
     LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_DATE = forms.CharField(widget=ValueHiddenInput,
@@ -125,7 +125,7 @@ class PayULiveUpdateForm(forms.Form):
     SELECTED_INSTALLMENTS_NO = forms.CharField(widget=ValueHiddenInput)
     BACK_REF = forms.CharField(widget=ValueHiddenInput)
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
-                                initial=Configuration.TEST_TRANSACTION)
+                                initial=PAYU_TEST_TRANSACTION)
 
     @property
     def signature(self):
@@ -204,7 +204,7 @@ class PayULiveUpdateForm(forms.Form):
                                 result += item
 
         result += suffix
-        return hmac.new(Configuration.MERCHANT_KEY, result).hexdigest()
+        return hmac.new(PAYU_MERCHANT_KEY, result).hexdigest()
 
     def _prepare_orders(self, orders):
         """

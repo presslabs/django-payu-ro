@@ -24,7 +24,7 @@ from django.http import HttpResponse, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from payu.conf import Configuration, PAYU_IPN_FIELDS
+from payu.conf import PAYU_MERCHANT_KEY, PAYU_IPN_FIELDS
 from payu.models import PayUIPN, ALUToken
 from payu.forms import PayUIPNForm
 
@@ -48,7 +48,7 @@ def ipn(request):
         validation_hash += ''.join(['%s%s' % (len(value), value)
                                     for value in field_value])
 
-    expected_hash = hmac.new(Configuration.MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
+    expected_hash = hmac.new(PAYU_MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
     request_hash = request.POST.get('HASH', '')
 
     if request_hash != expected_hash:
@@ -91,5 +91,5 @@ def ipn(request):
 
     # Send confirmation to PayU that we received this request
     date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
-    confirmation_hash = hmac.new(Configuration.MERCHANT_KEY, '00014%s' % date).hexdigest()
+    confirmation_hash = hmac.new(PAYU_MERCHANT_KEY, '00014%s' % date).hexdigest()
     return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))

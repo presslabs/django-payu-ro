@@ -17,43 +17,9 @@
 from django.conf import settings
 
 
-class MagicSingleton(type):
-    """
-    Evil singleton class used to set attributes of a single object.
-    Useful for global mutable configuration (also evil).
-    """
-
-    _instance = None
-
-    def __getattribute__(cls, arg):
-        if arg == '_instance':
-            return super(MagicSingleton, cls).__getattribute__(arg)
-
-        instance = cls._instance
-        if not instance:
-            instance = cls()
-            cls._instance = instance
-
-        return getattr(instance, arg)
-
-    def __setattr__(cls, arg, value):
-        if arg == '_instance':
-            super(MagicSingleton, cls).__setattr__(arg, value)
-            return
-
-        if not cls._instance:
-            cls._instance = cls()
-
-        setattr(cls._instance, arg, value)
-
-
-class Configuration(object):
-    __metaclass__ = MagicSingleton
-
-    MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
-    MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
-    TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
-
+PAYU_MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
+PAYU_MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
+PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 
 PAYU_MERCHANT_URL = getattr(settings, 'PAYU_MERCHANT_URL',
                             'https://secure.payu.ro/order/token/v2/merchantToken/')
