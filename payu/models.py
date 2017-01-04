@@ -24,7 +24,7 @@ from django.db import models
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
-from payu.conf import PAYU_PAYMENT_STATUS, PAYU_MERCHANT_URL, Configuration
+from payu.conf import PAYU_PAYMENT_STATUS, PAYU_MERCHANT_URL
 
 
 class PayUIPN(models.Model):
@@ -342,56 +342,3 @@ class ALUToken(models.Model):
 
     def __unicode__(self):
         return u'<Token: %s>' % self.IPN_CC_TOKEN
-
-
-class PayUPaymentToken(models.Model):
-    token = models.CharField(max_length=40)
-
-    status = models.BooleanField(default=True)
-    expiration_date = models.DateTimeField(blank=True, null=True)
-
-    card_number_mask = models.CharField(blank=True, null=True, max_length=40)
-    card_expiration_date = models.DateTimeField(blank=True, null=True)
-    card_holder_name = models.CharField(blank=True, null=True, max_length=40)
-    card_type = models.CharField(blank=True, null=True, max_length=10)
-    card_bank = models.CharField(blank=True, null=True, max_length=40)
-    card_program_name = models.CharField(blank=True, null=True, max_length=40)
-
-    @classmethod
-    def request(cls, order_reference,
-                merchant=Configuration.MERCHANT,
-                merchant_key=Configuration.MERCHANT_KEY):
-        timestamp = str(int(time.time()))
-        signature = PayUPaymentToken.signature(merchant_key, **{
-            'refNo': order_reference,
-            'merchant': merchant,
-            'timestamp': timestamp
-        })
-
-        headers = {
-            'X-timestamp': timestamp,
-            'Authorization': 'SIGNATURE %s:%s' % (merchant, signature),
-        }
-        data = {
-            'refNo': order_reference,
-            'merchant': merchant,
-            'timestamp': timestamp,
-            'signature': signature
-        }
-        response = requests.post(PAYU_MERCHANT_URL, data=data, headers=headers)
-
-        return response
-
-    @classmethod
-    def signature(cls, merchant_key, **kwargs):
-        timestamp = kwargs.pop('timestamp')
-
-        sorted_parameters = [parameter[1] for parameter in
-                             sorted(kwargs.items(),
-                                    key=lambda parameter: parameter[0])
-                            ]
-
-        hashable_string = "".join(sorted_parameters + [timestamp])
-
-        return hmac.new(merchant_key, hashable_string,
-                        digestmod=hashlib.sha256).hexdigest()

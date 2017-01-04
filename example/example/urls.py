@@ -12,8 +12,8 @@ urlpatterns = [
 
 urlpatterns += [
     url(r'^live-update/$', view=demo.live_update, name='live_update'),
-    url(r'^live-update-with-tokens/$', view=demo.live_update_with_token, name='live_update_with_token'),
-    url(r'^create-token-v2/$', view=demo.create_token_api_v2, name='create_token_api_v2'),
+    url(r'^live-update-with-tokens/$', view=demo.live_update_with_token,
+        name='live_update_with_token')
 ]
 
 urlpatterns += patterns('',

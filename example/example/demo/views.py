@@ -2,7 +2,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 
-from payu.models import PayUPaymentToken, PayUIPN
+from payu.models import PayUIPN
 from payu.forms import PayULiveUpdateForm
 
 
@@ -91,14 +91,4 @@ def live_update_with_token(request):
         'orders': ORDER,
         'details': details,
         'order_hash': payu_form.fields['ORDER_HASH'].initial
-    })
-
-
-def create_token_api_v2(request):
-    ipn = PayUIPN.objects.filter(REFNOEXT=DETAILS['ORDER_REF']).last()
-    token = PayUPaymentToken.request(ipn.REFNO)
-
-    return render(request, 'create_token_api_v2.html', {
-        'token': token,
-        'ref': ipn.REFNO
     })

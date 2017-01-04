@@ -1,7 +1,7 @@
 import pytest
 from mock import patch
 
-from payu.models import PayUIPN, PayUPaymentToken
+from payu.models import PayUIPN
 
 
 @pytest.mark.parametrize('flag_info, extra_info', [
@@ -52,15 +52,3 @@ def test_payu_model_flagged_signals(mock_flagged):
     model.send_signals()
 
     mock_flagged.send.assert_called_once_with(sender=model)
-
-
-@pytest.mark.parametrize('merchant, data, expected_signature', [
-    ('a', {'timestamp': '1'},
-     '24ce92ab6d6eb0cc16caad0a5c0123740d4645555557b6a61d1fd161348156a9'),
-    ('a', {'timestamp': '2'},
-     '022ec70a44137fbd56dae03b025c61c8e7752909a3d7cf5c79af785860720df5'),
-    ('a', {'timestamp': '2', 'refNo': '1'},
-     '1192defee8401749b2ff2d8e531fc46af04d5e0661bdd7f117f8281b7084bd58'),
-])
-def test_payu_payment_token(merchant, data, expected_signature):
-    assert PayUPaymentToken.signature(merchant, **data) == expected_signature

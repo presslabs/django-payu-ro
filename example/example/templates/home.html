@@ -6,18 +6,15 @@
 <h2>ACME shop</h2>
 
 Thank you for your order. You can pay via Credit Card using these methods:
+
 <ul>
     <li>
         <a href="{% url 'live_update' %}">Live Update</a>
     </li>
+
     <li>
         <a href="{% url 'live_update_with_token' %}">Tokens</a>
     </li>
-
-    <li>
-        <a href="{% url 'create_token_api_v2' %}">Tokens v2</a>
-    </li>
-
 </ul>
 
 {% endblock %}
