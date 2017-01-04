@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_title %} - Choose ALU token {% endblock %}
+
+{% block content %}
+
+    <h2>Choose ALU token</h2>
+
+    <p>
+        Order Items
+        {% for order in orders %}
+            <ul>
+                {% for detail, value in order.items %}
+                    <li>
+                        <code>
+                            {{ detail }}: {{ value }}
+                        </code>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </p>
+
+    <p>
+        Order Details
+        <ul>
+            {% for detail, value in details.items %}
+                <li>
+                    <code>
+                        {{ detail }}: {{ value }}
+                    </code>
+                </li>
+            {% endfor %}
+        </ul>
+    </p>
+
+    Choose a token for order: {{ details.ORDER_REF }}
+    <form action="{% url 'alu_payments' %}" method="POST">
+        {% csrf_token %}
+
+        <select name="alu-token">
+            {% for token in alu_tokens %}
+                <option value={{ token.pk }}>{{ token.IPN_CC_TOKEN }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Pay</button>
+    </form>
+
+{% endblock %}

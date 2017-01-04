@@ -12,8 +12,10 @@ urlpatterns = [
 
 urlpatterns += [
     url(r'^live-update/$', view=demo.live_update, name='live_update'),
-    url(r'^live-update-with-tokens/$', view=demo.live_update_with_token,
-        name='live_update_with_token')
+    url(r'^obtain-alu-token/$', view=demo.obtain_alu_token,
+        name='obtain_alu_token'),
+    url(r'^alu-payments/', view=demo.ALUPayments.as_view(),
+        name='alu_payments')
 ]
 
 urlpatterns += patterns('',

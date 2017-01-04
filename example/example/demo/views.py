@@ -1,9 +1,12 @@
 from django.conf import settings
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
+from django.views.generic import View
 
-from payu.models import PayUIPN
+from payu.alu import ALUPayment
 from payu.forms import PayULiveUpdateForm
+from payu.models import PayUIPN, ALUToken
 
 
 ORDER = [
@@ -73,7 +76,7 @@ def live_update(request):
     })
 
 
-def live_update_with_token(request):
+def obtain_alu_token(request):
     details = DETAILS.copy()
 
     details.pop('TESTORDER')
@@ -92,3 +95,39 @@ def live_update_with_token(request):
         'details': details,
         'order_hash': payu_form.fields['ORDER_HASH'].initial
     })
+
+
+class ALUPayments(View):
+    def get(self, request, *args, **kwargs):
+        details = DETAILS.copy()
+        details.pop('TESTORDER')
+
+        order = details.copy()
+        order['ORDER'] = ORDER[:1]
+        order['ORDER'][0]['PRICE'] = 1
+        order['ORDER'][0]['QTY'] = 1
+
+        ipns = [ipn.pk for ipn in
+                list(PayUIPN.objects.filter(REFNOEXT=order['ORDER_REF']))]
+
+        alu_tokens = ALUToken.objects.filter(ipn_id__in=ipns)
+
+        return render(request, 'choose_alu_token.html', {
+            'orders': order['ORDER'],
+            'details': details,
+            'alu_tokens': alu_tokens
+        })
+
+    def post(self, request, *args, **kwargs):
+        details = DETAILS.copy()
+        details.pop('TESTORDER')
+
+        order = details.copy()
+        order['ORDER'] = ORDER[:1]
+        order['ORDER'][0]['PRICE'] = 1
+        order['ORDER'][0]['QTY'] = 1
+
+        alu_token = ALUToken.objects.get(pk=request.POST['alu-token'])
+        payment = ALUPayment(order, alu_token)
+
+        return HttpResponse(payment.pay())
