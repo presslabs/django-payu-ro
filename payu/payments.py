@@ -29,16 +29,21 @@ class BasePayment(object):
 
 class TokenPayment(BasePayment):
     def pay(self):
+        return requests.post(PAYU_TOKENS_URL,
+                             data=self._build_payload()).content
+
+    def _build_payload(self):
         payload = {
             'REF_NO': self.token,
             'METHOD': 'TOKEN_NEWSALE',
             'MERCHANT': self.merchant,
             'TIMESTAMP': datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
         }
+
         payload.update(self.order)
         payload['SIGN'] = TokenPayment.get_signature(payload, self.merchant_key)
 
-        return requests.post(PAYU_TOKENS_URL, data=payload).content
+        return payload
 
 
 class ALUPayment(BasePayment):
