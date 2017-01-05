@@ -125,7 +125,7 @@ class PayULiveUpdateForm(forms.Form):
     SELECTED_INSTALLMENTS_NO = forms.CharField(widget=ValueHiddenInput)
     BACK_REF = forms.CharField(widget=ValueHiddenInput)
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
-                                initial=PAYU_TEST_TRANSACTION)
+                                initial=str(PAYU_TEST_TRANSACTION).upper())
 
     @property
     def signature(self):

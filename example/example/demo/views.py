@@ -98,9 +98,10 @@ def obtain_ipn_token(request):
 
 
 def debug(request):
-    print request.POST
     from pprint import pprint as pp
     pp(request.POST)
+
+    return HttpResponse(request.POST)
 
 
 class ALUPayments(View):
@@ -169,7 +170,6 @@ class TokenPayments(View):
             "BILL_PHONE": "0243236298",
             "DELIVERY_ADDRESS": "address 2",
             "DELIVERY_CITY": "Suceava",
-            "DELIVERY_EMAIL": "john@doe.com",
             "DELIVERY_EMAIL": "john@doe.com",
             "DELIVERY_FNAME": "John",
             "DELIVERY_LNAME": "Doe",
