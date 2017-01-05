@@ -52,3 +52,18 @@ def test_token_pay(mocked_requests):
     assert payment.pay() == expected_response
     mocked_requests.post.assert_called_once_with(PAYU_TOKENS_URL,
                                                  data="expected_payload")
+
+
+@patch('payu.payments.datetime')
+def test_token_build_payload(mocked_datetime):
+    payment = TokenPayment({"AMOUNT": 1}, "token", "key", "test")
+
+    mocked_datetime.now.return_value = MagicMock(strftime=MagicMock(return_value="now"))
+    assert payment._build_payload() == {
+        'AMOUNT': 1,
+        'MERCHANT': 'test',
+        'METHOD': 'TOKEN_NEWSALE',
+        'REF_NO': 'token',
+        'SIGN': '4192969bae28a16ba4777354903f895a',
+        'TIMESTAMP': 'now'
+    }

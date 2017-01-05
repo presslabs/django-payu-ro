@@ -1,5 +1,5 @@
 import hmac
-import datetime
+from datetime import datetime
 
 import requests
 
@@ -37,7 +37,7 @@ class TokenPayment(BasePayment):
             'REF_NO': self.token,
             'METHOD': 'TOKEN_NEWSALE',
             'MERCHANT': self.merchant,
-            'TIMESTAMP': datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+            'TIMESTAMP': datetime.now().strftime("%Y%m%d%H%M%S"),
         }
 
         payload.update(self.order)
