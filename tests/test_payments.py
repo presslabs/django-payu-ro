@@ -2,7 +2,7 @@ import pytest
 from mock import patch, MagicMock
 
 from payu.payments import TokenPayment, ALUPayment
-from payu.conf import PAYU_TOKENS_URL
+from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
 
 
 @pytest.mark.parametrize('order, key, signature', [
@@ -66,4 +66,49 @@ def test_token_build_payload(mocked_datetime):
         'REF_NO': 'token',
         'SIGN': '4192969bae28a16ba4777354903f895a',
         'TIMESTAMP': 'now'
+    }
+
+
+@patch('payu.payments.requests')
+def test_alu_token_pay(mocked_requests):
+    payment = ALUPayment("", "")
+    payment._build_payload = MagicMock(return_value="expected_payload")
+
+    expected_response = "ok"
+    mocked_requests.post.return_value = MagicMock(content=expected_response)
+
+    assert payment.pay() == expected_response
+    mocked_requests.post.assert_called_once_with(PAYU_ALU_URL,
+                                                 data="expected_payload")
+
+
+def test_alutoken_build_payload():
+    payment = ALUPayment(
+        {
+            "AMOUNT": 1,
+            "ORDER": [
+                {
+                    'PNAME': 'CD Player',
+                    'PCODE': 'PROD_04891',
+                    'PINFO': 'Extended Warranty - 5 Years',
+                    'PRICE': '82.3',
+                    'PRICE_TYPE': 'GROSS',
+                    'QTY': '7',
+                    'VAT':'20'
+                }
+            ],
+        }, "token", "key", "test")
+
+    assert payment._build_payload() == {
+        'AMOUNT': 1,
+        'MERCHANT': 'test',
+        'CC_TOKEN': 'token',
+        'ORDER_HASH': '011c09b688e3b20ad7f93732e9768e86',
+        'ORDER_PCODE[0]': 'PROD_04891',
+        'ORDER_PINFO[0]': 'Extended Warranty - 5 Years',
+        'ORDER_PNAME[0]': 'CD Player',
+        'ORDER_PRICE[0]': '82.3',
+        'ORDER_PRICE_TYPE[0]': 'GROSS',
+        'ORDER_QTY[0]': '7',
+        'ORDER_VAT[0]': '20'
     }

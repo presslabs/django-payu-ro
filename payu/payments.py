@@ -48,20 +48,19 @@ class TokenPayment(BasePayment):
 
 class ALUPayment(BasePayment):
     def pay(self):
+        return requests.post(PAYU_ALU_URL, data=self._build_payload()).content
+
+    def _build_payload(self):
         order = self.order
-
         order["MERCHANT"] = self.merchant
-        order = self._build_order(order, self.token)
-        order["ORDER_HASH"] = ALUPayment.get_signature(order, self.merchant_key)
 
-        return requests.post(PAYU_ALU_URL, data=order)
+        payload = self._parse_orders(order.pop('ORDER'))
+        payload['CC_TOKEN'] = self.token
+        payload.update(**order)
+        payload["ORDER_HASH"] = ALUPayment.get_signature(payload,
+                                                         self.merchant_key)
 
-    def _build_order(self, order, alu_token):
-        final_order = self._parse_orders(order.pop('ORDER'))
-        final_order['CC_TOKEN'] = alu_token.IPN_CC_TOKEN
-        final_order.update(**order)
-
-        return final_order
+        return payload
 
     def _parse_orders(self, orders):
         """
@@ -100,7 +99,7 @@ class ALUPayment(BasePayment):
                 \/
 
             {
-                'ORDER_PCODE[0]': 'PROD_04891',
+                 'ORDER_PCODE[0]': 'PROD_04891',
                  'ORDER_PCODE[1]': 'PROD_07409',
                  'ORDER_PCODE[2]': 'PROD_04965',
                  'ORDER_PINFO[0]': 'Extended Warranty - 5 Years',
