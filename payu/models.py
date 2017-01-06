@@ -17,6 +17,9 @@ import time
 import hmac
 import hashlib
 from datetime import datetime
+from collections import OrderedDict
+
+import pytz
 
 import requests
 
@@ -24,7 +27,8 @@ from django.db import models
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
-from payu.conf import PAYU_PAYMENT_STATUS
+from payu.conf import (PAYU_PAYMENT_STATUS, PAYU_IDN_URL,
+                       PAYU_MERCHANT, PAYU_MERCHANT_KEY)
 
 
 class PayUIPN(models.Model):
@@ -324,6 +328,38 @@ class PayUIPN(models.Model):
     class Meta:
         verbose_name = 'PayU IPN'
         db_table = 'payu_ipn'
+
+
+class IDN(models.Model):
+    ipn = models.OneToOneField(PayUIPN)
+    sent = models.BooleanField(default=False)
+
+    success = models.BooleanField(default=False)
+    response = models.TextField(blank=True)
+
+    def send(self):
+        payload = OrderedDict([
+            ('MERCHANT', PAYU_MERCHANT),
+            ('ORDER_REF', self.ipn.REFNO),
+            ('ORDER_AMOUNT', self.ipn.IPN_TOTALGENERAL),
+            ('ORDER_CURRENCY', self.ipn.CURRENCY),
+            ('IDN_DATE', datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')),
+        ])
+
+        confirmation_hash = "".join(["%s%s" % (len(payload[field]), payload[field])
+                                     for field in payload])
+        payload["ORDER_HASH"] = hmac.new(PAYU_MERCHANT_KEY, confirmation_hash).hexdigest()
+
+        try:
+            response = requests.post(PAYU_IDN_URL, data=payload)
+            self.success = response.status_code != 200
+            self.response = response.content
+        except Exception as e:
+            self.response = str(e)
+            self.success = False
+
+        self.sent = True
+        self.save()
 
 
 class IPNCCToken(models.Model):

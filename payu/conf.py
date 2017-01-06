@@ -23,6 +23,8 @@ PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 
 PAYU_ALU_URL = getattr(settings, 'PAYU_ALU_URL',
                        'https://secure.payu.ro/order/alu/v3')
+PAYU_IDN_URL = getattr(settings, 'PAYU_IDN_URL',
+                       'https://secure.payu.ro/order/idn.php')
 
 PAYU_TOKENS_URL = getattr(settings, 'PAYU_TOKENS_URL',
                           'https://secure.payu.ro/order/tokens/')

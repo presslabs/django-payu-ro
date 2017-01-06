@@ -15,7 +15,7 @@
 #    limitations under the License.
 from django.contrib import admin
 
-from payu.models import PayUIPN, IPNCCToken
+from payu.models import PayUIPN, IPNCCToken, IDN
 
 
 class PayUIPNAdmin(admin.ModelAdmin):
@@ -29,5 +29,10 @@ class IPNCCTokenAdmin(admin.ModelAdmin):
                     'IPN_CC_EXP_DATE')
 
 
+class IDNAdmin(admin.ModelAdmin):
+    list_display = ('ipn', 'sent', 'success')
+
+
 admin.site.register(PayUIPN, PayUIPNAdmin)
 admin.site.register(IPNCCToken, IPNCCTokenAdmin)
+admin.site.register(IDN, IDNAdmin)

@@ -42,15 +42,15 @@ ORDER = [
 
 DETAILS = {
     'ORDER_REF': '789456123',
-    'ORDER_DATE': '2017-01-04 12:08:40',
+    'ORDER_DATE': '2017-01-06 17:12:40',
     'PRICES_CURRENCY': 'RON',
     'CURRENCY': 'RON',
-    'ORDER_SHIPPING': '0',
-    'DISCOUNT': '0',
+    # 'ORDER_SHIPPING': '0',
+    # 'DISCOUNT': '0',
     'PAY_METHOD': 'CCVISAMC',
-    'DESTINATION_CITY': 'Bucuresti',
-    'DESTINATION_STATE': 'Bucuresti',
-    'DESTINATION_COUNTRY': 'RO',
+    # 'DESTINATION_CITY': 'Bucuresti',
+    # 'DESTINATION_STATE': 'Bucuresti',
+    # 'DESTINATION_COUNTRY': 'RO',
     'TESTORDER': 'TRUE',
     'AUTOMODE': '1',
     'BACK_REF': settings.PAYU_CALLBACK_URL,
@@ -160,7 +160,7 @@ class TokenPayments(View):
         token = IPNCCToken.objects.get(pk=request.POST['token'])
 
         payment = TokenPayment({
-            "AMOUNT": 1,
+            "AMOUNT": 10,
             "CURRENCY": "RON",
             "BILL_ADDRESS": "address 1",
             "BILL_CITY": "Iasi",
@@ -174,7 +174,7 @@ class TokenPayments(View):
             "DELIVERY_FNAME": "John",
             "DELIVERY_LNAME": "Doe",
             "DELIVERY_PHONE": "0243236298",
-            "EXTERNAL_REF": "25787sa1",
+            "EXTERNAL_REF": "789456123",
         }, token.IPN_CC_TOKEN)
         result = payment.pay()
 

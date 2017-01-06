@@ -25,7 +25,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from payu.conf import PAYU_MERCHANT_KEY, PAYU_IPN_FIELDS
-from payu.models import PayUIPN, IPNCCToken
+from payu.models import PayUIPN, IPNCCToken, IDN
 from payu.forms import PayUIPNForm
 
 
@@ -88,6 +88,8 @@ def ipn(request):
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
             ipn=ipn_obj
         ).send_signals()
+
+    IDN.objects.create(ipn=ipn_obj)
 
     # Send confirmation to PayU that we received this request
     date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
