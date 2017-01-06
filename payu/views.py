@@ -91,5 +91,16 @@ def ipn(request):
 
     # Send confirmation to PayU that we received this request
     date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
-    confirmation_hash = hmac.new(PAYU_MERCHANT_KEY, '00014%s' % date).hexdigest()
+
+    confirmation_hash = ""
+    for field in ["IPN_PID[]", "IPN_PNAME[]", "IPN_DATE"]:
+        field_value = request.POST.getlist(field)
+
+        if not field_value:
+            confirmation_hash += "0"
+        else:
+            confirmation_hash += field_value
+
+    confirmation_hash = hmac.new(PAYU_MERCHANT_KEY,
+                                 '%s14%s' % (confirmation_hash, date)).hexdigest()
     return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))
