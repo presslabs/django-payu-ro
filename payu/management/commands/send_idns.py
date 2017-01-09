@@ -3,7 +3,7 @@ import logging
 from django.db.models import Q
 from django.core.management.base import BaseCommand
 
-from payu.models import IDN
+from payu.models import PayUIDN
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        idns = IDN.objects.filter(Q(sent=False) | Q(sent=True, success=False))
+        idns = PayUIDN.objects.filter(Q(sent=False) | Q(sent=True, success=False))
 
         if options['idns']:
             idns = idns.filter(pk__in=options['idns'])

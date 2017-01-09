@@ -330,7 +330,7 @@ class PayUIPN(models.Model):
         db_table = 'payu_ipn'
 
 
-class IDN(models.Model):
+class PayUIDN(models.Model):
     ipn = models.OneToOneField(PayUIPN)
     sent = models.BooleanField(default=False)
 
@@ -362,7 +362,7 @@ class IDN(models.Model):
         self.save()
 
 
-class IPNCCToken(models.Model):
+class PayUIPNCCToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
     # same value as IPN's REFNO

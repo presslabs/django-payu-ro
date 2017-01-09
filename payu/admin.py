@@ -15,7 +15,7 @@
 #    limitations under the License.
 from django.contrib import admin
 
-from payu.models import PayUIPN, IPNCCToken, IDN
+from payu.models import PayUIPN, PayUIPNCCToken, PayUIDN
 
 
 class PayUIPNAdmin(admin.ModelAdmin):
@@ -24,15 +24,15 @@ class PayUIPNAdmin(admin.ModelAdmin):
     list_filter = ('ORDERSTATUS', 'flag')
 
 
-class IPNCCTokenAdmin(admin.ModelAdmin):
+class PayUIPNCCTokenAdmin(admin.ModelAdmin):
     list_display = ('__unicode__', 'ipn', 'IPN_CC_TOKEN', 'IPN_CC_MASK',
                     'IPN_CC_EXP_DATE')
 
 
-class IDNAdmin(admin.ModelAdmin):
+class PayUIDNAdmin(admin.ModelAdmin):
     list_display = ('ipn', 'sent', 'success')
 
 
 admin.site.register(PayUIPN, PayUIPNAdmin)
-admin.site.register(IPNCCToken, IPNCCTokenAdmin)
-admin.site.register(IDN, IDNAdmin)
+admin.site.register(PayUIPNCCToken, PayUIPNCCTokenAdmin)
+admin.site.register(PayUIDN, PayUIDNAdmin)

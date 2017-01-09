@@ -6,7 +6,7 @@ from django.views.generic import View
 
 from payu.payments import ALUPayment, TokenPayment
 from payu.forms import PayULiveUpdateForm
-from payu.models import PayUIPN, IPNCCToken
+from payu.models import PayUIPN, PayUIPNCCToken
 
 
 ORDER = [
@@ -117,7 +117,7 @@ class ALUPayments(View):
         ipns = [ipn.pk for ipn in
                 list(PayUIPN.objects.filter(REFNOEXT=order['ORDER_REF']))]
 
-        alu_tokens = IPNCCToken.objects.filter(ipn_id__in=ipns)
+        alu_tokens = PayUIPNCCToken.objects.filter(ipn_id__in=ipns)
 
         return render(request, 'choose_alu_token.html', {
             'orders': order['ORDER'],
@@ -137,7 +137,7 @@ class ALUPayments(View):
         order['ORDER_TIMEOUT'] = 10 * 60
         order['ORDER_REF'] = '789456124'
 
-        token = IPNCCToken.objects.get(pk=request.POST['token'])
+        token = PayUIPNCCToken.objects.get(pk=request.POST['token'])
         payment = ALUPayment(order, token.IPN_CC_TOKEN)
 
         respone = payment.pay()
@@ -149,7 +149,7 @@ class TokenPayments(View):
         ipns = [ipn.pk for ipn in
                 list(PayUIPN.objects.filter(REFNOEXT=DETAILS['ORDER_REF']))]
 
-        tokens = IPNCCToken.objects.filter(ipn_id__in=ipns)
+        tokens = PayUIPNCCToken.objects.filter(ipn_id__in=ipns)
 
         return render(request, 'choose_token.html', {
             'initial_order_ref': DETAILS['ORDER_REF'],
@@ -157,7 +157,7 @@ class TokenPayments(View):
         })
 
     def post(self, request, *args, **kwargs):
-        token = IPNCCToken.objects.get(pk=request.POST['token'])
+        token = PayUIPNCCToken.objects.get(pk=request.POST['token'])
 
         payment = TokenPayment({
             "AMOUNT": 10,
