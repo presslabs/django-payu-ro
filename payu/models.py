@@ -24,6 +24,8 @@ import pytz
 import requests
 
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
@@ -303,17 +305,6 @@ class PayUIPN(models.Model):
         self.flag = True
         self.flag_info += info
 
-    def send_signals(self):
-        if self.flag:
-            payment_flagged.send(sender=self)
-            return
-
-        if self.is_authorized:
-            payment_authorized.send(sender=self)
-
-        if self.is_completed:
-            payment_completed.send(sender=self)
-
     @property
     def is_authorized(self):
         return self.ORDERSTATUS in ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'TEST']
@@ -383,8 +374,23 @@ class PayUIPNCCToken(models.Model):
 
     IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
 
-    def send_signals(self):
-        alu_token_created.send(sender=self)
-
     def __unicode__(self):
         return u'<Token: %s>' % self.IPN_CC_TOKEN
+
+
+@receiver(post_save, sender=PayUIPNCCToken)
+def post_payu_ipn_cc_token_save(sender, instance=None, **kwargs):
+    alu_token_created.send(sender=instance)
+
+
+@receiver(post_save, sender=PayUIPN)
+def post_payu_ipn_save(sender, instance=None, **kwargs):
+    if instance.flag:
+        payment_flagged.send(sender=instance)
+        return
+
+    if instance.is_authorized:
+        payment_authorized.send(sender=instance)
+
+    if instance.is_completed:
+        payment_completed.send(sender=instance)

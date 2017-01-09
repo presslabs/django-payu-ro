@@ -32,27 +32,24 @@ def test_payu_model_order_status(order, authorized, completed):
     assert model.is_completed == completed
 
 
+@pytest.mark.django_db
 @patch('payu.models.payment_authorized')
 def test_payu_model_authorized_signals(mock_authorized):
-    model = PayUIPN(ORDERSTATUS='TEST')
-    model.send_signals()
-
+    model = G(PayUIPN, ORDERSTATUS='TEST')
     mock_authorized.send.assert_called_once_with(sender=model)
 
 
+@pytest.mark.django_db
 @patch('payu.models.payment_completed')
 def test_payu_model_completed_signals(mock_completed):
-    model = PayUIPN(ORDERSTATUS='COMPLETE')
-    model.send_signals()
-
+    model = G(PayUIPN, ORDERSTATUS='COMPLETE')
     mock_completed.send.assert_called_once_with(sender=model)
 
 
+@pytest.mark.django_db
 @patch('payu.models.payment_flagged')
 def test_payu_model_flagged_signals(mock_flagged):
-    model = PayUIPN(flag=True)
-    model.send_signals()
-
+    model = G(PayUIPN, flag=True)
     mock_flagged.send.assert_called_once_with(sender=model)
 
 

@@ -74,7 +74,6 @@ def ipn(request):
         ipn_obj.set_flag(error)
 
     ipn_obj.save()
-    ipn_obj.send_signals()
 
     # Check for a token in the request and save it if found
     IPN_CC_TOKEN = request.POST.get('IPN_CC_TOKEN')
@@ -87,7 +86,7 @@ def ipn(request):
             IPN_CC_MASK=IPN_CC_MASK,
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
             ipn=ipn_obj
-        ).send_signals()
+        )
 
     PayUIDN.objects.create(ipn=ipn_obj)
 
