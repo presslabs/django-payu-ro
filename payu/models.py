@@ -338,21 +338,12 @@ class PayUIDN(models.Model):
     response = models.TextField(blank=True)
 
     def send(self):
-        payload = OrderedDict([
-            ('MERCHANT', PAYU_MERCHANT),
-            ('ORDER_REF', self.ipn.REFNO),
-            ('ORDER_AMOUNT', self.ipn.IPN_TOTALGENERAL),
-            ('ORDER_CURRENCY', self.ipn.CURRENCY),
-            ('IDN_DATE', datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')),
-        ])
-
-        confirmation_hash = "".join(["%s%s" % (len(payload[field]), payload[field])
-                                     for field in payload])
-        payload["ORDER_HASH"] = hmac.new(PAYU_MERCHANT_KEY, confirmation_hash).hexdigest()
+        payload = self._build_payload(PAYU_MERCHANT, PAYU_MERCHANT_KEY)
 
         try:
             response = requests.post(PAYU_IDN_URL, data=payload)
-            self.success = response.status_code != 200
+
+            self.success = response.status_code == 200
             self.response = response.content
         except Exception as e:
             self.response = str(e)
@@ -360,6 +351,25 @@ class PayUIDN(models.Model):
 
         self.sent = True
         self.save()
+
+    @classmethod
+    def signature(cls, payload, merchant_key):
+        confirmation_hash = "".join(["%s%s" % (len(str(payload[field])),
+                                               payload[field])
+                                     for field in payload])
+        return hmac.new(merchant_key, confirmation_hash).hexdigest()
+
+    def _build_payload(self, merchant, merchant_key, now=None):
+        payload = OrderedDict([
+            ('MERCHANT', merchant),
+            ('ORDER_REF', self.ipn.REFNO or -1),
+            ('ORDER_AMOUNT', self.ipn.IPN_TOTALGENERAL or 0),
+            ('ORDER_CURRENCY', self.ipn.CURRENCY or 'RON'),
+            ('IDN_DATE', now or datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')),
+        ])
+        payload["ORDER_HASH"] = self.signature(payload, merchant_key)
+
+        return payload
 
 
 class PayUIPNCCToken(models.Model):
