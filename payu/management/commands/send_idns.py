@@ -30,3 +30,8 @@ class Command(BaseCommand):
 
         for idn in idns:
             idn.send()
+
+            if not idn.success:
+                logger.error('Encountered exception while processing idn'
+                             'with id=%s, ex=%s.', idn.id, idn.response,
+                             exc_info=True)
