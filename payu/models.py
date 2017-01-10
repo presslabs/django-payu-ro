@@ -288,7 +288,7 @@ class PayUIPN(models.Model):
                                                20120426145935)')
 
     response = models.TextField(blank=True)
-    ip_address = models.IPAddressField(blank=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
 
     flag = models.BooleanField(default=False)
     flag_info = models.TextField(blank=True)
