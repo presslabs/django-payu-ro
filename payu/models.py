@@ -20,7 +20,6 @@ from datetime import datetime
 from collections import OrderedDict
 
 import pytz
-
 import requests
 
 from django.db import models
@@ -328,6 +327,9 @@ class PayUIDN(models.Model):
     success = models.BooleanField(default=False)
     response = models.TextField(blank=True)
 
+    class Meta:
+        verbose_name = 'PayU IDN'
+
     def send(self):
         payload = self._build_payload(PAYU_MERCHANT, PAYU_MERCHANT_KEY)
 
@@ -362,8 +364,11 @@ class PayUIDN(models.Model):
 
         return payload
 
+    def __unicode__(self):
+        return u'<IDN: %s>' % self.pk
 
-class PayUIPNCCToken(models.Model):
+
+class PayUToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
     # same value as IPN's REFNO
@@ -374,11 +379,14 @@ class PayUIPNCCToken(models.Model):
 
     IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
 
+    class Meta:
+        verbose_name = 'PayU Tokens V1'
+
     def __unicode__(self):
         return u'<Token: %s>' % self.IPN_CC_TOKEN
 
 
-@receiver(post_save, sender=PayUIPNCCToken)
+@receiver(post_save, sender=PayUToken)
 def post_payu_ipn_cc_token_save(sender, instance=None, **kwargs):
     alu_token_created.send(sender=instance)
 

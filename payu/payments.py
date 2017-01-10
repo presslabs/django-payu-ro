@@ -29,17 +29,13 @@ class BasePayment(object):
 
 class TokenPayment(BasePayment):
     def pay(self):
-        # return self._build_payload()
-
         return requests.post(PAYU_TOKENS_URL,
-                            # params=self._build_payload()).content
                             data=self._build_payload()).content
 
     def _build_payload(self):
         payload = {
             'REF_NO': self.token,
             'METHOD': 'TOKEN_NEWSALE',
-            # 'METHOD': 'TOKEN_GETINFO',
             'MERCHANT': self.merchant,
             'TIMESTAMP': datetime.now().strftime("%Y%m%d%H%M%S"),
         }
@@ -47,10 +43,6 @@ class TokenPayment(BasePayment):
         payload.update(self.order)
 
         payload['SIGN'] = TokenPayment.get_signature(payload, self.merchant_key)
-
-        from pprint import pprint as pp
-        pp(payload)
-
 
         return payload
 

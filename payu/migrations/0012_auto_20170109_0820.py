@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='PayUIPNCCToken',
+            name='PayUToken',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('IPN_CC_TOKEN', models.CharField(max_length=9, verbose_name=b'Token')),

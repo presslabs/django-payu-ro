@@ -13,7 +13,7 @@
 
         <select name="token">
             {% for token in tokens %}
-                <option value={{ token.pk }}>{{ token.IPN_CC_TOKEN }}</option>
+                <option value={{ token.pk }}>{{ token.IPN_CC_MASK }}|{{ token.IPN_CC_TOKEN }}</option>
             {% endfor %}
         </select>
 
