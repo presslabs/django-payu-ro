@@ -49,11 +49,11 @@ install_requires = [line.strip()
                     if not line.strip().startswith('#') and line.strip()]
 
 setup(
-    name='django-payu',
-    version=".".join(map(str, payu.__version__)),
+    name='django-payu-ro',
+    version=payu.__version__,
     author='Presslabs SRL',
     author_email='support@presslabs.com',
-    url='http://github.com/PressLabs/django-payu',
+    url='http://github.com/PressLabs/django-payu-ro',
     description='A pluggable Django application for integrating PayU Payments (ex. ePayment)',
     packages=find_packages(),
     include_package_data=True,

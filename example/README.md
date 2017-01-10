@@ -1,11 +1,11 @@
 # Running the example application
 
 Assuming you use virtualenv, follow these steps to download and run the
-django-payu example application in this directory:
+django-payu-ro example application in this directory:
 
 ```
-$ git clone git://github.com/PressLabs/django-payu.git
-$ cd django-payu/example
+$ git clone git://github.com/PressLabs/django-payu-rc.git
+$ cd django-payu-rc/example
 $ virtualenv venv
 $ . venv/bin/activate
 $ pip install -r requirements.txt

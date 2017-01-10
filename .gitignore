@@ -6,4 +6,5 @@
 .coverage
 local_settings.py
 
-django_payu.egg-info
+django_payu_ro.egg-info
+dist
