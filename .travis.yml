@@ -1,8 +1,11 @@
 language: python
 python:
   - "2.7"
-cache: pip
+
 install:
   - pip install -U -r requirements.test.txt
+
 script:
-  - pytest --cov-report term-missing --cov=payu tests/
+   make full-test
+
+cache: pip

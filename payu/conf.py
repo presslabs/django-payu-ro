@@ -20,7 +20,11 @@ from django.conf import settings
 PAYU_MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
 PAYU_MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
 PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
+PAYU_LU_CALLBACK = getattr(settings, 'PAYU_LU_CALLBACK', '')
 
+
+PAYU_LU_URL = getattr(settings, 'PAYU_LU_URL',
+                      'https://secure.payu.ro/order/lu.php')
 PAYU_ALU_URL = getattr(settings, 'PAYU_ALU_URL',
                        'https://secure.payu.ro/order/alu/v3')
 PAYU_IDN_URL = getattr(settings, 'PAYU_IDN_URL',

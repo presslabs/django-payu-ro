@@ -25,7 +25,8 @@ from payu.models import PayUIPN
 from payu.conf import (PAYU_MERCHANT, PAYU_MERCHANT_KEY, PAYU_TEST_TRANSACTION,
                        PAYU_ORDER_DETAILS, PAYU_ORDER_DETAILS_DEFAULTS,
                        PAYU_DATE_FORMATS, PAYU_CURRENCIES,
-                       PAYU_PAYMENT_METHODS, PAYU_LANGUAGES)
+                       PAYU_PAYMENT_METHODS, PAYU_LANGUAGES,
+                       PAYU_LU_CALLBACK)
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -123,7 +124,8 @@ class PayULiveUpdateForm(forms.Form):
     LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput,
                                  choices=PAYU_LANGUAGES, initial='EN')
     SELECTED_INSTALLMENTS_NO = forms.CharField(widget=ValueHiddenInput)
-    BACK_REF = forms.CharField(widget=ValueHiddenInput)
+    BACK_REF = forms.CharField(widget=ValueHiddenInput,
+                               initial=PAYU_LU_CALLBACK)
     TESTORDER = forms.CharField(widget=ValueHiddenInput,
                                 initial=str(PAYU_TEST_TRANSACTION).upper())
 
