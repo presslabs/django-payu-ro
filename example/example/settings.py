@@ -55,7 +55,6 @@ INSTALLED_APPS = (
     'django_extensions',
 
     'payu',
-
     'example.demo'
 )
 
