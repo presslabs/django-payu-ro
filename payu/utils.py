@@ -44,4 +44,4 @@ class PayUIOS(object):
         if parsed_response.tag == 'Error':
             return {'error': parsed_response.text.strip()}
 
-        return {child.tag: child.text.strip() for child in parsed_response}
+        return {child.tag: (child.text or '').strip() for child in parsed_response}
