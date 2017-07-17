@@ -5,7 +5,7 @@ from mock import MagicMock, patch
 from django_dynamic_fixture import G
 
 from payu.models import PayUIPN
-from payu.utils import PayUIOS
+from payu.utils import _signature, _build_payload, get_instant_order_status
 
 
 def test_ios_signature():
@@ -16,7 +16,7 @@ def test_ios_signature():
         ('REFNOEXT', 'EPAY10425')
     ])
 
-    signature = PayUIOS.signature(payload, merchant_key='1231234567890123')
+    signature = _signature(payload, merchant_key='1231234567890123')
 
     assert signature == '6cb19f366fd9709b078b593b1736a4ea'
 
@@ -24,7 +24,7 @@ def test_ios_signature():
 def test_ios_payload():
     # this data is taken from the PayU documentation
 
-    payload = PayUIOS._build_payload(merchant='PAYUDEMO',
+    payload = _build_payload(merchant='PAYUDEMO',
                                      ref_no_ext='EPAY10425',
                                      merchant_key='1231234567890123')
 
@@ -52,7 +52,7 @@ def test_ios_get_instant_order_status(mocked_requests):
 
     ipn = G(PayUIPN)
 
-    status = PayUIOS.get_instant_order_status(ipn)
+    status = get_instant_order_status(ipn)
 
     assert status == {'HASH': 'adc135ddd73f0f4fe3eb9d26b84c662d',
                       'PAYMETHOD': 'Visa/MasterCard/Eurocard',
@@ -75,6 +75,6 @@ def test_ios_get_instant_order_status_error(mocked_requests, payu_response, expe
 
     ipn = G(PayUIPN)
 
-    result = PayUIOS.get_instant_order_status(ipn)
+    result = get_instant_order_status(ipn)
 
     assert result == expected_result
