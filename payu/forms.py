@@ -184,7 +184,7 @@ class PayULiveUpdateForm(forms.Form):
 
             if field.name in hashable_fields and field_value:
                 encoded_value = u'%d%s' % (len(str(field_value)), field_value)
-                if (field.name == 'TESTORDER' and field_value == 'TRUE') or \
+                if field.name == 'TESTORDER' or \
                     field.name == 'SELECTED_INSTALLMENTS_NO':
                     suffix += encoded_value
                 else:
