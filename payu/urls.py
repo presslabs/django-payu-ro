@@ -14,8 +14,8 @@
 #    limitations under the License.
 #
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
-urlpatterns = patterns('payu.views',
+urlpatterns = [
     url(r'^ipn/$', 'ipn', name='payu-ipn'),
-)
+]
