@@ -16,6 +16,8 @@
 
 from django.conf.urls import url
 
+from .views import ipn
+
 urlpatterns = [
-    url(r'^ipn/$', 'ipn', name='payu-ipn'),
+    url(r'^ipn/$', ipn, name='payu-ipn'),
 ]
