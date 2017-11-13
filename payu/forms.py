@@ -18,6 +18,7 @@ import re
 import hmac
 from datetime import datetime
 
+import django
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -35,20 +36,33 @@ class ValueHiddenInput(forms.HiddenInput):
     Used to remove unused fields from PayU buttons.
     """
 
-    def render(self, name, value, attrs=None):
+    def _get_value(self, value):
         if value is None:
-            return u''
+            value = u''
+        return value
 
+    def _get_name(self, name):
         detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
         if detail and int(detail.group(2)) < len(PAYU_ORDER_DETAILS):
             name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
+        return name
+
+    def get_context(self, name, value, attrs):
+        context = super(ValueHiddenInput, self).get_context(name, value, attrs)
+        context['widget']['name'] = self._get_name(context['widget']['name'])
+        context['widget']['value'] = self._get_value(context['widget']['value'])
+        return context
+
+    def render(self, name, value, attrs=None):
+        name = self._get_name(name)
+        value = self._get_value(value)
 
         return super(ValueHiddenInput, self).render(name, value or "", attrs)
 
 
 class OrderWidget(forms.MultiWidget):
-    def __init__(self, *args, **kwargs):
-        all_widgets = tuple(ValueHiddenInput() for _ in PAYU_ORDER_DETAILS)
+    def __init__(self, attrs={}, *args, **kwargs):
+        all_widgets = [ValueHiddenInput(attrs) for _ in PAYU_ORDER_DETAILS]
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
     def decompress(self, value):
@@ -80,7 +94,6 @@ class OrdersField(forms.MultiValueField):
         if products:
             self.widget = OrdersWidget(len(products))
             all_fields = tuple((OrderField()) for _ in products)
-
         super(OrdersField, self).__init__(all_fields, *args, **kwargs)
 
 
