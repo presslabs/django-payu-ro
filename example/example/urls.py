@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.views.generic import TemplateView
-from django.conf.urls import include, url, patterns
+from django.conf.urls import include, url
 from django.contrib import admin
 
 from example.demo import views as demo
@@ -36,6 +36,6 @@ urlpatterns += [
         name='debug')
 ]
 
-urlpatterns += patterns('',
-    (r'^payu/', include('payu.urls')),
-)
+urlpatterns += [
+    url(r'^payu/', include('payu.urls')),
+]
