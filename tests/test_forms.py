@@ -15,6 +15,7 @@
 from datetime import datetime
 
 import pytest
+import django
 from django.http import QueryDict
 
 from payu.forms import (PayULiveUpdateForm, ValueHiddenInput, OrderWidget,
@@ -177,18 +178,38 @@ def test_orders_parsing(payload, orders):
     assert payu_form._prepare_orders(payload['ORDER']) == orders
 
 
-@pytest.mark.parametrize("field,html", [
-    (ValueHiddenInput().render('name', None), ''),
-    (ValueHiddenInput().render('name', ''),
+@pytest.mark.parametrize("version,field,html", [
+    ('', ValueHiddenInput().render('name', None), ''),
+
+    ('1.11',
+     ValueHiddenInput().render('name', ''),
      '<input type="hidden" name="name" />'),
-    (ValueHiddenInput().render('name', 'value'),
+    ('1.11',
+     ValueHiddenInput().render('name', 'value'),
      '<input type="hidden" name="name" value="value" />'),
-    (ValueHiddenInput().render('ORDER_10_0', 'a'),
+    ('1.11',
+     ValueHiddenInput().render('ORDER_10_0', 'a'),
      '<input type="hidden" name="ORDER_PNAME[]" value="a" />'),
-    (ValueHiddenInput().render('ORDER_10_10', 'a'),
+    ('1.11',
+     ValueHiddenInput().render('ORDER_10_10', 'a'),
+     '<input type="hidden" name="ORDER_10_10" value="a" />'),
+
+    ('1.8',
+     ValueHiddenInput().render('name', ''),
+     '<input type="hidden" name="name" />'),
+    ('1.8',
+     ValueHiddenInput().render('name', 'value'),
+     '<input type="hidden" name="name" value="value" />'),
+    ('1.8',
+     ValueHiddenInput().render('ORDER_10_0', 'a'),
+     '<input type="hidden" name="ORDER_PNAME[]" value="a" />'),
+    ('1.8',
+     ValueHiddenInput().render('ORDER_10_10', 'a'),
      '<input type="hidden" name="ORDER_10_10" value="a" />'),
 ])
-def test_value_input_hidden(field, html):
+def test_value_input_hidden(version, field, html):
+    if version and version not in '.'.join(map(str, django.VERSION)):
+        return
     assert field == html
 
 
