@@ -196,16 +196,16 @@ def test_orders_parsing(payload, orders):
 
     ('1.8',
      ValueHiddenInput().render('name', ''),
-     '<input type="hidden" name="name" />'),
+     '<input name="name" type="hidden" />'),
     ('1.8',
      ValueHiddenInput().render('name', 'value'),
-     '<input type="hidden" name="name" value="value" />'),
+     '<input name="name" type="hidden" value="value" />'),
     ('1.8',
      ValueHiddenInput().render('ORDER_10_0', 'a'),
-     '<input type="hidden" name="ORDER_PNAME[]" value="a" />'),
+     '<input name="ORDER_PNAME[]" type="hidden" value="a" />'),
     ('1.8',
      ValueHiddenInput().render('ORDER_10_10', 'a'),
-     '<input type="hidden" name="ORDER_10_10" value="a" />'),
+     '<input name="ORDER_10_10" type="hidden" value="a" />'),
 ])
 def test_value_input_hidden(version, field, html):
     if version and version not in '.'.join(map(str, django.VERSION)):
