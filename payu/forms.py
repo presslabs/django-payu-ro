@@ -36,10 +36,7 @@ class ValueHiddenInput(forms.HiddenInput):
     Used to remove unused fields from PayU buttons.
     """
 
-    def _get_value(self, value):
-        if value is None:
-            value = u''
-        return value
+    template_name = 'custom_hidden.html'
 
     def _get_name(self, name):
         detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
@@ -50,12 +47,13 @@ class ValueHiddenInput(forms.HiddenInput):
     def get_context(self, name, value, attrs):
         context = super(ValueHiddenInput, self).get_context(name, value, attrs)
         context['widget']['name'] = self._get_name(context['widget']['name'])
-        context['widget']['value'] = self._get_value(context['widget']['value'])
         return context
 
     def render(self, name, value, attrs=None):
+        if value is None:
+            return u''
+
         name = self._get_name(name)
-        value = self._get_value(value)
 
         return super(ValueHiddenInput, self).render(name, value or "", attrs)
 
