@@ -179,10 +179,14 @@ def test_orders_parsing(payload, orders):
 
 @pytest.mark.parametrize("field,html", [
     (ValueHiddenInput().render('name', None), ''),
-    (ValueHiddenInput().render('name', ''), '<input name="name" type="hidden" />'),
-    (ValueHiddenInput().render('name', 'value'), '<input name="name" type="hidden" value="value" />'),
-    (ValueHiddenInput().render('ORDER_10_0', 'a'), '<input name="ORDER_PNAME[]" type="hidden" value="a" />'),
-    (ValueHiddenInput().render('ORDER_10_10', 'a'), '<input name="ORDER_10_10" type="hidden" value="a" />'),
+    (ValueHiddenInput().render('name', ''),
+     '<input type="hidden" name="name" />'),
+    (ValueHiddenInput().render('name', 'value'),
+     '<input type="hidden" name="name" value="value" />'),
+    (ValueHiddenInput().render('ORDER_10_0', 'a'),
+     '<input type="hidden" name="ORDER_PNAME[]" value="a" />'),
+    (ValueHiddenInput().render('ORDER_10_10', 'a'),
+     '<input type="hidden" name="ORDER_10_10" value="a" />'),
 ])
 def test_value_input_hidden(field, html):
     assert field == html
