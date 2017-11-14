@@ -253,3 +253,37 @@ def test_payu_model_form_date_conversion():
 def test_payu_model_form_list_processing(form_data, expected):
     form = PayUIPNForm(form_data)
     assert form['IPN_PID'].value() == expected
+
+
+@pytest.mark.parametrize("payload, html", [
+    ({
+        'ORDER_REF': 112457,
+        'ORDER_DATE': '2012-05-01 15:51:35',
+        'ORDER': [
+            {
+                'PNAME': 'MacBook Air 13 inch',
+                'PCODE': 'MBA13',
+                'PINFO': 'Extended Warranty - 5 Years',
+                'PRICE': 1750,
+                'PRICE_TYPE': 'GROSS',
+                'QTY': 1,
+                'VAT': 24
+            },
+        ],
+        'BILL_FNAME': 'Joe',
+        'BILL_LNAME': 'Doe',
+        'BILL_COUNTRYCODE': 'RO',
+        'BILL_PHONE': '+040000000000',
+        'BILL_EMAIL': 'joe.doe@gmail.com',
+        'BILL_COMPANY': 'ACME Inc',
+        'BILL_FISCALCODE': None,
+        'PRICES_CURRENCY': 'RON',
+        'CURRENCY': 'RON',
+        'PAY_METHOD': 'CCVISAMC'
+     }, '''
+<input id="id_MERCHANT" name="MERCHANT" type="hidden" value="PAYUDEMO" /><input id="id_LU_ENABLE_TOKEN" name="LU_ENABLE_TOKEN" type="hidden" /><input id="id_ORDER_REF" name="ORDER_REF" type="hidden" value="112457" /><input id="id_ORDER_DATE" name="ORDER_DATE" type="hidden" value="2012-05-01 15:51:35" /><input id="id_ORDER_0_0" name="ORDER_PNAME[]" type="hidden" value="MacBook Air 13 inch" /><input id="id_ORDER_0_2" name="ORDER_PCODE[]" type="hidden" value="MBA13" /><input id="id_ORDER_0_3" name="ORDER_PINFO[]" type="hidden" value="Extended Warranty - 5 Years" /><input id="id_ORDER_0_4" name="ORDER_PRICE[]" type="hidden" value="1750" /><input id="id_ORDER_0_5" name="ORDER_PRICE_TYPE[]" type="hidden" value="GROSS" /><input id="id_ORDER_0_6" name="ORDER_QTY[]" type="hidden" value="1" /><input id="id_ORDER_0_7" name="ORDER_VAT[]" type="hidden" value="24" /><input id="id_PRICES_CURRENCY" name="PRICES_CURRENCY" type="hidden" value="RON" /><input id="id_PAY_METHOD" name="PAY_METHOD" type="hidden" value="CCVISAMC" /><input id="id_ORDER_HASH" name="ORDER_HASH" type="hidden" value="5b118e083e52a24872f579134c5db6cc" /><input id="id_BILL_FNAME" name="BILL_FNAME" type="hidden" value="Joe" /><input id="id_BILL_LNAME" name="BILL_LNAME" type="hidden" value="Doe" /><input id="id_BILL_COUNTRYCODE" name="BILL_COUNTRYCODE" type="hidden" value="RO" /><input id="id_BILL_PHONE" name="BILL_PHONE" type="hidden" value="+040000000000" /><input id="id_BILL_EMAIL" name="BILL_EMAIL" type="hidden" value="joe.doe@gmail.com" /><input id="id_BILL_COMPANY" name="BILL_COMPANY" type="hidden" value="ACME Inc" /><input id="id_CURRENCY" name="CURRENCY" type="hidden" value="RON" /><input id="id_AUTOMODE" name="AUTOMODE" type="hidden" value="1" /><input id="id_LANGUAGE" name="LANGUAGE" type="hidden" value="EN" /><input id="id_BACK_REF" name="BACK_REF" type="hidden" /><input id="id_TESTORDER" name="TESTORDER" type="hidden" value="TRUE" />
+     ''')
+])
+def test_html_rendering(payload, html):
+    payu_form = PayULiveUpdateForm(initial=payload)
+    assert payu_form.as_p() == html.split("\n")[1]
