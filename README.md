@@ -1,4 +1,4 @@
-django-payu [![BuildStatus](https://travis-ci.org/PressLabs/django-payu.svg?branch=payu-token)](https://travis-ci.org/PressLabs/django-payu)
+django-payu [![Build Status](https://travis-ci.org/PressLabs/django-payu-ro.svg?branch=master)](https://travis-ci.org/PressLabs/django-payu-ro)
 ===========
 
 Django integration for PayU (ex. ePayment). This is not a reference implementation.
