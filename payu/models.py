@@ -318,6 +318,7 @@ class PayUIPN(models.Model):
     class Meta:
         verbose_name = 'PayU IPN'
         db_table = 'payu_ipn'
+        app_label = 'payu'
 
 
 class PayUIDN(models.Model):
@@ -329,6 +330,7 @@ class PayUIDN(models.Model):
 
     class Meta:
         verbose_name = 'PayU IDN'
+        app_label = 'payu'
 
     def send(self):
         payload = self._build_payload(PAYU_MERCHANT, PAYU_MERCHANT_KEY)
@@ -381,6 +383,7 @@ class PayUToken(models.Model):
 
     class Meta:
         verbose_name = 'PayU Tokens V1'
+        app_label = 'payu'
 
     def __unicode__(self):
         return u'<Token: %s>' % self.IPN_CC_TOKEN
