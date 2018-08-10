@@ -1,3 +1,6 @@
+=== 1.0.11 ===
+- Fixed trying to convert unicode chars to ascii in some cases.
+
 === 1.0.0 ===
 - Implement PayU tokens
 - Improve project structure and development
