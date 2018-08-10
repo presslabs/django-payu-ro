@@ -13,9 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-import time
 import hmac
-import hashlib
 from datetime import datetime
 from collections import OrderedDict
 
@@ -23,8 +21,9 @@ import pytz
 import requests
 
 from django.db import models
-from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils.six import text_type
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
@@ -341,7 +340,7 @@ class PayUIDN(models.Model):
             self.success = response.status_code == 200
             self.response = response.content
         except Exception as e:
-            self.response = str(e)
+            self.response = text_type(e)
             self.success = False
 
         self.sent = True
@@ -349,7 +348,7 @@ class PayUIDN(models.Model):
 
     @classmethod
     def signature(cls, payload, merchant_key):
-        confirmation_hash = "".join(["%s%s" % (len(str(payload[field])),
+        confirmation_hash = "".join(["%s%s" % (len(text_type(payload[field])),
                                                payload[field])
                                      for field in payload])
         return hmac.new(merchant_key, confirmation_hash).hexdigest()

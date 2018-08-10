@@ -18,9 +18,8 @@ import re
 import hmac
 from datetime import datetime
 
-import django
 from django import forms
-from django.core.exceptions import ValidationError
+from django.utils.six import text_type
 
 from payu.models import PayUIPN
 from payu.conf import (PAYU_MERCHANT, PAYU_MERCHANT_KEY, PAYU_TEST_TRANSACTION,
@@ -194,7 +193,7 @@ class PayULiveUpdateForm(forms.Form):
             field_value = field.value()
 
             if field.name in hashable_fields and field_value:
-                encoded_value = u'%d%s' % (len(str(field_value)), field_value)
+                encoded_value = u'%d%s' % (len(text_type(field_value)), field_value)
                 if field.name == 'TESTORDER' or \
                     field.name == 'SELECTED_INSTALLMENTS_NO':
                     suffix += encoded_value
@@ -209,7 +208,7 @@ class PayULiveUpdateForm(forms.Form):
                         for order in field_value:
                             value = order.get(detail, '')
 
-                            item = u'%d%s' % (len(str(value)), value)
+                            item = u'%d%s' % (len(text_type(value)), value)
 
                             if detail == 'PRICE_TYPE':
                                 suffix += item

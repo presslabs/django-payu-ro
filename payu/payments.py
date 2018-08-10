@@ -17,6 +17,8 @@ from datetime import datetime
 
 import requests
 
+from django.utils.six import text_type
+
 from payu.conf import (PAYU_MERCHANT_KEY, PAYU_MERCHANT,
                        PAYU_ALU_URL, PAYU_TOKENS_URL)
 
@@ -36,7 +38,7 @@ class BasePayment(object):
     @classmethod
     def get_signature(self, payload, merchant_key):
         sorted_payload = sorted(payload.items(), key=lambda item: item[0])
-        parameters = "".join(["%s%s" % (len(str(parameter[1])), parameter[1])
+        parameters = "".join(["%s%s" % (len(text_type(parameter[1])), parameter[1])
                               for parameter in sorted_payload])
         return hmac.new(merchant_key, parameters).hexdigest()
 
