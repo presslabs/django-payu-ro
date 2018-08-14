@@ -50,7 +50,7 @@ class ValueHiddenInput(forms.HiddenInput):
 
     def render(self, name, value, attrs=None):
         if value is None:
-            return u''
+            return text_type()
 
         name = self._get_name(name)
 
@@ -180,12 +180,12 @@ class PayULiveUpdateForm(forms.Form):
                            'DESTINATION_CITY', 'DESTINATION_STATE',
                            'DESTINATION_COUNTRY', 'PAY_METHOD',
                            'SELECTED_INSTALLMENTS_NO', 'TESTORDER']
-        result = u''
+        result = text_type()
 
         # We need this hack since payU is not consistent
         # with the order of fields in hash string
 
-        suffix = u''
+        suffix = text_type()
         for field in self:
             if field.name == 'ORDER_HASH':
                 continue
@@ -193,7 +193,7 @@ class PayULiveUpdateForm(forms.Form):
             field_value = field.value()
 
             if field.name in hashable_fields and field_value:
-                encoded_value = u'%d%s' % (len(text_type(field_value)), field_value)
+                encoded_value = text_type('%d%s') % (len(text_type(field_value)), field_value)
                 if field.name == 'TESTORDER' or \
                     field.name == 'SELECTED_INSTALLMENTS_NO':
                     suffix += encoded_value
@@ -208,7 +208,7 @@ class PayULiveUpdateForm(forms.Form):
                         for order in field_value:
                             value = order.get(detail, '')
 
-                            item = u'%d%s' % (len(text_type(value)), value)
+                            item = text_type('%d%s') % (len(text_type(value)), value)
 
                             if detail == 'PRICE_TYPE':
                                 suffix += item
@@ -216,6 +216,7 @@ class PayULiveUpdateForm(forms.Form):
                                 result += item
 
         result += suffix
+        result = result.encode('utf-8')
         return hmac.new(PAYU_MERCHANT_KEY, result).hexdigest()
 
     def _prepare_orders(self, orders):

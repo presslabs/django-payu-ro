@@ -21,6 +21,7 @@ from datetime import datetime
 import pytz
 
 from django.http import HttpResponse, QueryDict
+from django.utils.six import text_type
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -38,15 +39,17 @@ def ipn(request):
     form_data = request.POST
     ipn_form = PayUIPNForm(form_data)
 
-    validation_hash = ''
+    validation_hash = text_type()
     for field in PAYU_IPN_FIELDS:
         if field not in request.POST:
             continue
 
         field_value = request.POST.getlist(field)
 
-        validation_hash += ''.join(['%s%s' % (len(value), value)
-                                    for value in field_value])
+        validation_hash += text_type().join(
+            [text_type('%s%s') % (len(value), value)
+             for value in field_value]
+        ).encode('utf-8')
 
     expected_hash = hmac.new(PAYU_MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
     request_hash = request.POST.get('HASH', '')
