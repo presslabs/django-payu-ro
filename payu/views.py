@@ -47,8 +47,9 @@ def ipn(request):
         field_value = request.POST.getlist(field)
 
         validation_hash += text_type().join(
-            [text_type('%s%s') % (len(value), value)
-             for value in field_value]
+            [text_type('{length}{value}').format(
+                length=len(text_type(value).encode('utf-8')), value=value
+            ) for value in field_value]
         ).encode('utf-8')
 
     expected_hash = hmac.new(PAYU_MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()

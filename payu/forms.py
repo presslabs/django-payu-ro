@@ -193,7 +193,9 @@ class PayULiveUpdateForm(forms.Form):
             field_value = field.value()
 
             if field.name in hashable_fields and field_value:
-                encoded_value = text_type('%d%s') % (len(text_type(field_value)), field_value)
+                encoded_value = text_type('{length}{value}').format(
+                    length=len(text_type(field_value).encode('utf-8')), value=field_value
+                )
                 if field.name == 'TESTORDER' or \
                     field.name == 'SELECTED_INSTALLMENTS_NO':
                     suffix += encoded_value
@@ -208,7 +210,9 @@ class PayULiveUpdateForm(forms.Form):
                         for order in field_value:
                             value = order.get(detail, '')
 
-                            item = text_type('%d%s') % (len(text_type(value)), value)
+                            item = text_type('{length}{value}').format(
+                                length=len(text_type(value).encode('utf-8')), value=value
+                            )
 
                             if detail == 'PRICE_TYPE':
                                 suffix += item

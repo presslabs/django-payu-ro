@@ -56,7 +56,7 @@ from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
          "BILL_LNAME": "Jose",
          "DELIVERY_CITY": "Ciudad de México".decode('utf-8'),
          "EXTERNAL_REF": "25787sa1"
-     }, "-1", "bf61340371d0052bd7e9d11dca0fb934"),
+     }, "-1", "0c79288878d66cd85c02c09664547625"),
     ({
         "AMOUNT": 1,
     }, "", "bef91610dda7aabfe371623edb399f3e")
