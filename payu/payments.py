@@ -39,8 +39,9 @@ class BasePayment(object):
     def get_signature(self, payload, merchant_key):
         sorted_payload = sorted(payload.items(), key=lambda item: item[0])
         parameters = text_type().join(
-            [text_type("%s%s") % (len(text_type(parameter[1])), parameter[1])
-             for parameter in sorted_payload]
+            [text_type('{length}{value}').format(
+                length=len(text_type(parameter[1]).encode('utf-8')), value=parameter[1]
+            ) for parameter in sorted_payload]
         ).encode('utf-8')
         return hmac.new(merchant_key, parameters).hexdigest()
 

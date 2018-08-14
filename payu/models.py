@@ -349,8 +349,9 @@ class PayUIDN(models.Model):
     @classmethod
     def signature(cls, payload, merchant_key):
         confirmation_hash = text_type().join(
-            [text_type("%s%s") % (len(text_type(payload[field])), payload[field])
-             for field in payload]
+            [text_type('{length}{value}').format(
+                    length=len(text_type(value).encode('utf-8')), value=value
+            ) for value in payload.values()]
         ).encode('utf-8')
         return hmac.new(merchant_key, confirmation_hash).hexdigest()
 
