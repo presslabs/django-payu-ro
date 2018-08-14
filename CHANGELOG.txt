@@ -1,3 +1,7 @@
+=== 1.1.1 ===
+- Fix signature error caused by wrong unicode length. Hopefully.
+
+
 === 1.1 ===
 - Drop Django1.8 support.
 - Properly fix HMAC UnicodeEncodeError. Hopefully.
