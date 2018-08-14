@@ -9,5 +9,4 @@ pipeline:
 
 matrix:
   DJANGO_VERSION:
-    - <1.9
     - <2.0
