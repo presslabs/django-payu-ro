@@ -118,7 +118,7 @@ class Migration(migrations.Migration):
                 ('IPN_CC_TOKEN', models.CharField(max_length=9, verbose_name=b'Token')),
                 ('IPN_CC_MASK', models.CharField(max_length=36, verbose_name=b'Last 4 digits')),
                 ('IPN_CC_EXP_DATE', models.DateField(verbose_name=b'Expiration date')),
-                ('ipn', models.OneToOneField(to='payu.PayUIPN')),
+                ('ipn', models.OneToOneField(to='payu.PayUIPN', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'PayU Tokens V1',
@@ -127,6 +127,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='payuidn',
             name='ipn',
-            field=models.OneToOneField(to='payu.PayUIPN'),
+            field=models.OneToOneField(to='payu.PayUIPN', on_delete=models.CASCADE),
         ),
     ]

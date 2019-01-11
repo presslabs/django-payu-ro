@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import hashlib
 import hmac
 from datetime import datetime
 
@@ -43,7 +43,7 @@ class BasePayment(object):
                 length=len(text_type(parameter[1]).encode('utf-8')), value=parameter[1]
             ) for parameter in sorted_payload]
         ).encode('utf-8')
-        return hmac.new(merchant_key, parameters).hexdigest()
+        return hmac.new(merchant_key, parameters, hashlib.md5).hexdigest()
 
 
 class TokenPayment(BasePayment):
@@ -162,7 +162,7 @@ class ALUPayment(BasePayment):
         result = {}
 
         for index, order in enumerate(orders):
-            for detail, value in order.iteritems():
+            for detail, value in order.items():
                 result["ORDER_%s[%s]" % (detail, index)] = value
 
         return result

@@ -14,6 +14,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+import hashlib
 import re
 import hmac
 from datetime import datetime
@@ -48,17 +49,18 @@ class ValueHiddenInput(forms.HiddenInput):
         context['widget']['name'] = self._get_name(context['widget']['name'])
         return context
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, *args, **kwargs):
         if value is None:
             return text_type()
 
         name = self._get_name(name)
 
-        return super(ValueHiddenInput, self).render(name, value or "", attrs)
+        return super(ValueHiddenInput, self).render(name, value or "", *args, **kwargs)
 
 
 class OrderWidget(forms.MultiWidget):
-    def __init__(self, attrs={}, *args, **kwargs):
+    def __init__(self, attrs=None, *args, **kwargs):
+        attrs = attrs or {}
         all_widgets = [ValueHiddenInput(attrs) for _ in PAYU_ORDER_DETAILS]
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
@@ -222,7 +224,7 @@ class PayULiveUpdateForm(forms.Form):
 
         result += suffix
         result = result.encode('utf-8')
-        return hmac.new(PAYU_MERCHANT_KEY, result).hexdigest()
+        return hmac.new(PAYU_MERCHANT_KEY, result, hashlib.md5).hexdigest()
 
     def _prepare_orders(self, orders):
         """

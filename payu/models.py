@@ -13,6 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+import hashlib
 import hmac
 from datetime import datetime
 from collections import OrderedDict
@@ -321,7 +322,7 @@ class PayUIPN(models.Model):
 
 
 class PayUIDN(models.Model):
-    ipn = models.OneToOneField(PayUIPN)
+    ipn = models.OneToOneField(PayUIPN, on_delete=models.CASCADE)
     sent = models.BooleanField(default=False)
 
     success = models.BooleanField(default=False)
@@ -348,12 +349,17 @@ class PayUIDN(models.Model):
 
     @classmethod
     def signature(cls, payload, merchant_key):
+        hashable_fields = ["MERCHANT", "ORDER_REF", "ORDER_AMOUNT", "ORDER_CURRENCY", "IDN_DATE",
+                           "CHARGE_AMOUNT"]
+
+        hash_values = [payload[field] for field in hashable_fields if field in payload]
+
         confirmation_hash = text_type().join(
             [text_type('{length}{value}').format(
                     length=len(text_type(value).encode('utf-8')), value=value
-            ) for value in payload.values()]
+            ) for value in hash_values]
         ).encode('utf-8')
-        return hmac.new(merchant_key, confirmation_hash).hexdigest()
+        return hmac.new(merchant_key, confirmation_hash, hashlib.md5).hexdigest()
 
     def _build_payload(self, merchant, merchant_key, now=None):
         payload = OrderedDict([
@@ -372,7 +378,7 @@ class PayUIDN(models.Model):
 
 
 class PayUToken(models.Model):
-    ipn = models.OneToOneField(PayUIPN)
+    ipn = models.OneToOneField(PayUIPN, on_delete=models.CASCADE)
 
     # used for token/v1 api payments (same value as IPN's REFNO)
     # DEPRECATED

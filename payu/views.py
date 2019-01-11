@@ -20,7 +20,7 @@ from datetime import datetime
 
 import pytz
 
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse
 from django.utils.six import text_type
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -31,7 +31,7 @@ from payu.forms import PayUIPNForm
 
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["POST"])
 def ipn(request):
     ipn_obj = None
     error = None
@@ -50,7 +50,9 @@ def ipn(request):
             [text_type('{length}{value}').format(
                 length=len(text_type(value).encode('utf-8')), value=value
             ) for value in field_value]
-        ).encode('utf-8')
+        )
+
+    validation_hash = validation_hash.encode('utf-8')
 
     expected_hash = hmac.new(PAYU_MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
     request_hash = request.POST.get('HASH', '')
@@ -61,7 +63,7 @@ def ipn(request):
         if ipn_form.is_valid():
             try:
                 ipn_obj = ipn_form.save(commit=False)
-            except Exception, exception:
+            except Exception as exception:
                 error = "Exception while processing. (%s)" % exception
         else:
             error = "Invalid form. (%s)" % ipn_form.errors
@@ -97,17 +99,18 @@ def ipn(request):
     PayUIDN.objects.create(ipn=ipn_obj)
 
     # Send confirmation to PayU that we received this request
-    date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
+    date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S').encode('utf-8')
 
-    confirmation_hash = ""
+    confirmation_hash = b""
     for field in ["IPN_PID[]", "IPN_PNAME[]", "IPN_DATE"]:
         field_value = request.POST.getlist(field)
 
         if not field_value:
-            confirmation_hash += "0"
+            confirmation_hash += b"0"
         else:
             confirmation_hash += field_value
 
     confirmation_hash = hmac.new(PAYU_MERCHANT_KEY,
-                                 '%s14%s' % (confirmation_hash, date)).hexdigest()
+                                 b'%s14%s' % (confirmation_hash, date),
+                                 hashlib.md5).hexdigest()
     return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))

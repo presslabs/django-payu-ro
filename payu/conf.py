@@ -15,10 +15,13 @@
 #    limitations under the License.
 #
 from django.conf import settings
-
+from django.utils.six import binary_type
 
 PAYU_MERCHANT = getattr(settings, 'PAYU_MERCHANT', '')
 PAYU_MERCHANT_KEY = getattr(settings, 'PAYU_KEY', '')
+if not isinstance(PAYU_MERCHANT_KEY, binary_type):
+    PAYU_MERCHANT_KEY = PAYU_MERCHANT_KEY.encode('utf-8')
+
 PAYU_TEST_TRANSACTION = getattr(settings, 'PAYU_TEST', 'TRUE')
 PAYU_LU_CALLBACK = getattr(settings, 'PAYU_LU_CALLBACK', '')
 
