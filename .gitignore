@@ -8,3 +8,6 @@ local_settings.py
 
 django_payu_ro.egg-info
 dist
+
+# JetBrains IDEs
+.idea

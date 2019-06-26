@@ -1,6 +1,8 @@
+=== 1.2.0 ===
+- Added Python 3.5, 3.6 and 3.7 compatibility.
+
 === 1.1.1 ===
 - Fix signature error caused by wrong unicode length. Hopefully.
-
 
 === 1.1 ===
 - Drop Django1.8 support.

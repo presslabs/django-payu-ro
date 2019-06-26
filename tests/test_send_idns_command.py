@@ -27,7 +27,7 @@ def test_send_idn_payu(mocked_requests):
     mocked_requests.post().status_code = 200
     mocked_requests.post().content = "ok"
 
-    idns = [G(PayUIDN) for _ in xrange(4)]
+    idns = [G(PayUIDN) for _ in range(4)]
 
     idns_args = [str(idn.pk) for idn in idns[:2]]
     call_command('send_idns', '--idns=%s' % ','.join(idns_args))

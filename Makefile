@@ -1,7 +1,7 @@
 full-test: test
 
 test:
-	pytest --cov-report term-missing --cov=payu --create-db tests/
+	pytest --create-db tests/
 
 run:
 	cd example && \

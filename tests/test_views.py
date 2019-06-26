@@ -12,22 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-
 import pytest
 
-from django.http import QueryDict
 from django.test import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from payu.models import PayUIPN
-from payu.views import ipn
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('method, status_code', [
-    ('get', 200),
-    pytest.mark.xfail(("post", 403)),
+    ('get', 405),
+    ("post", 200),
     ('put', 405),
     ('patch', 405),
     ('delete', 405)
@@ -50,7 +46,7 @@ def test_ipn_view_valid_payload():
     client = Client()
 
     response = client.post(reverse('payu-ipn'), post_data)
-    assert 'EPAYMENT' in response.content
+    assert b'EPAYMENT' in response.content
 
     ipn = PayUIPN.objects.filter(REFNO=post_data['REFNO']).first()
     assert ipn
