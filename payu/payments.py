@@ -61,21 +61,32 @@ class TokenPayment(BasePayment):
 
         payload.update(self.order)
 
-        payload['SIGN'] = TokenPayment.get_signature(payload, self.merchant_key)
+        payload['SIGN'] = self.get_signature(payload, self.merchant_key)
 
         return payload
 
 
 class ALUPayment(BasePayment):
+    def __init__(self, *args, **kwargs):
+        self.lu_token_type = kwargs.pop("lu_token_type", None)
+
+        super(ALUPayment, self).__init__(*args, **kwargs)
+
     def pay(self):
         return requests.post(PAYU_ALU_URL, data=self._build_payload()).content
 
     def _build_payload(self):
         order = self.order
         order["MERCHANT"] = self.merchant
+        if not order.get("ORDER_DATE"):
+            order["ORDER_DATE"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         payload = self._parse_orders(order.pop('ORDER'))
         payload['CC_TOKEN'] = self.token
+        if self.lu_token_type and payload['CC_TOKEN']:
+            payload['CC_CVV'] = ""
+            payload['LU_TOKEN_TYPE'] = self.lu_token_type
+
         payload.update(**order)
         payload["ORDER_HASH"] = ALUPayment.get_signature(payload,
                                                          self.merchant_key)

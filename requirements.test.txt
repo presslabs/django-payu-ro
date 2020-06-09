@@ -5,3 +5,4 @@ coverage==4.2
 pytest-cov==2.4.0
 mock==2.0.0
 django-dynamic-fixture==1.9.5
+freezegun==0.3.8
