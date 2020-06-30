@@ -81,6 +81,7 @@ def ipn(request):
 
     # Check for a token in the request and save it if found
     IPN_CC_TOKEN = request.POST.get('IPN_CC_TOKEN')
+    TOKEN_HASH = request.POST.get('TOKEN_HASH')
     IPN_CC_MASK = request.POST.get('IPN_CC_MASK')
     IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
 
@@ -89,6 +90,7 @@ def ipn(request):
             IPN_CC_TOKEN=IPN_CC_TOKEN,
             IPN_CC_MASK=IPN_CC_MASK,
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
+            TOKEN_HASH=TOKEN_HASH,
             ipn=ipn_obj
         )
 

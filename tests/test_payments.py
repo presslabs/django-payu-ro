@@ -18,6 +18,7 @@
 import pytest
 from mock import patch, MagicMock
 
+from freezegun import freeze_time
 from payu.payments import TokenPayment, ALUPayment
 from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
 
@@ -107,6 +108,7 @@ def test_alu_token_pay(mocked_requests):
                                                  data="expected_payload")
 
 
+@freeze_time("2020-06-30 11:49:52")
 def test_alutoken_build_payload():
     payment = ALUPayment(
         {
@@ -128,7 +130,8 @@ def test_alutoken_build_payload():
         'AMOUNT': 1,
         'MERCHANT': 'test',
         'CC_TOKEN': 'token',
-        'ORDER_HASH': '011c09b688e3b20ad7f93732e9768e86',
+        'ORDER_DATE': '2020-06-30 11:49:52',
+        'ORDER_HASH': 'a25afe5b6fd8246e7b8c8846535ba01b',
         'ORDER_PCODE[0]': 'PROD_04891',
         'ORDER_PINFO[0]': 'Extended Warranty - 5 Years',
         'ORDER_PNAME[0]': 'CD Player',

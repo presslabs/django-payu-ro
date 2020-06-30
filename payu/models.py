@@ -374,8 +374,11 @@ class PayUIDN(models.Model):
 class PayUToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
-    # same value as IPN's REFNO
+    # used for token/v1 api payments (same value as IPN's REFNO)
     IPN_CC_TOKEN = models.CharField(max_length=9, verbose_name="Token")
+
+    # can be used for the `IPN_CC_TOKEN` field in alu/v3 token payments
+    TOKEN_HASH = models.CharField(max_length=64, verbose_name="Token Hash", blank=True, null=True)
 
     # documentation is unclear of the length and format of this field
     IPN_CC_MASK = models.CharField(max_length=36, verbose_name="Last 4 digits")
@@ -387,7 +390,7 @@ class PayUToken(models.Model):
         app_label = 'payu'
 
     def __unicode__(self):
-        return u'<Token: %s>' % self.IPN_CC_TOKEN
+        return u'<Token: %s>' % (self.TOKEN_HASH or self.IPN_CC_TOKEN)
 
 
 @receiver(post_save, sender=PayUToken)

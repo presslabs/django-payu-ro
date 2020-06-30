@@ -98,6 +98,7 @@ class PayULiveUpdateForm(forms.Form):
     MERCHANT = forms.CharField(widget=ValueHiddenInput,
                                initial=PAYU_MERCHANT)
     LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial='')
+    LU_TOKEN_TYPE = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
     ORDER_DATE = forms.CharField(widget=ValueHiddenInput,
                                  initial=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
