@@ -1,3 +1,6 @@
+=== 1.2.1 ===
+- Fixed PayUToken not being created from IPN when receiving a v2 token.
+
 === 1.2.0 ===
 - Added support for token payments with ALU/v3.
 - As token/v1 payments are deprecated and unmaintained by PayU, support for it in this package is

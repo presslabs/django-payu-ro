@@ -85,7 +85,7 @@ def ipn(request):
     IPN_CC_MASK = request.POST.get('IPN_CC_MASK')
     IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
 
-    if all([IPN_CC_TOKEN, IPN_CC_MASK, IPN_CC_EXP_DATE]):
+    if all([(IPN_CC_TOKEN or TOKEN_HASH), IPN_CC_MASK, IPN_CC_EXP_DATE]):
         PayUToken.objects.create(
             IPN_CC_TOKEN=IPN_CC_TOKEN,
             IPN_CC_MASK=IPN_CC_MASK,
