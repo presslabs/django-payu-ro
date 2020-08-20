@@ -1,3 +1,6 @@
+=== 1.2.2 ===
+- Deprecated PayUToken v1 and made the field no longer required in the PayUToken model.
+
 === 1.2.1 ===
 - Fixed PayUToken not being created from IPN when receiving a v2 token.
 

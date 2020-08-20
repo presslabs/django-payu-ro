@@ -375,10 +375,11 @@ class PayUToken(models.Model):
     ipn = models.OneToOneField(PayUIPN)
 
     # used for token/v1 api payments (same value as IPN's REFNO)
-    IPN_CC_TOKEN = models.CharField(max_length=9, verbose_name="Token")
+    # DEPRECATED
+    IPN_CC_TOKEN = models.CharField(max_length=9, verbose_name="Token (deprecated)", blank=True, null=True)
 
     # can be used for the `IPN_CC_TOKEN` field in alu/v3 token payments
-    TOKEN_HASH = models.CharField(max_length=64, verbose_name="Token Hash", blank=True, null=True)
+    TOKEN_HASH = models.CharField(max_length=64, verbose_name="Token", blank=True, null=True)
 
     # documentation is unclear of the length and format of this field
     IPN_CC_MASK = models.CharField(max_length=36, verbose_name="Last 4 digits")
@@ -386,7 +387,7 @@ class PayUToken(models.Model):
     IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
 
     class Meta:
-        verbose_name = 'PayU Tokens V1'
+        verbose_name = 'PayU Tokens'
         app_label = 'payu'
 
     def __unicode__(self):
