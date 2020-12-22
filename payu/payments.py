@@ -68,7 +68,8 @@ class TokenPayment(BasePayment):
 
 class ALUPayment(BasePayment):
     def __init__(self, *args, **kwargs):
-        self.lu_token_type = kwargs.pop("lu_token_type", None)
+        self.stored_credentials_use_type = kwargs.pop("stored_credentials_use_type", None)
+        self.threeds_data = kwargs.pop("threeds_data", {})
 
         super(ALUPayment, self).__init__(*args, **kwargs)
 
@@ -83,9 +84,13 @@ class ALUPayment(BasePayment):
 
         payload = self._parse_orders(order.pop('ORDER'))
         payload['CC_TOKEN'] = self.token
-        if self.lu_token_type and payload['CC_TOKEN']:
+        if self.stored_credentials_use_type and payload['CC_TOKEN']:
             payload['CC_CVV'] = ""
-            payload['LU_TOKEN_TYPE'] = self.lu_token_type
+            payload['STORED_CREDENTIALS_USE_TYPE'] = self.stored_credentials_use_type
+
+            if isinstance(self.threeds_data, dict):
+                payload['STRONG_CUSTOMER_AUTHENTICATION'] = "YES" if self.threeds_data else "NO"
+                payload.update(self.threeds_data)
 
         payload.update(**order)
         payload["ORDER_HASH"] = ALUPayment.get_signature(payload,
