@@ -14,10 +14,10 @@
 #    limitations under the License.
 #
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 
 from .views import ipn
 
 urlpatterns = [
-    url(r'^ipn/$', ipn, name='payu-ipn'),
+    re_path(r'^ipn/$', ipn, name='payu-ipn'),
 ]

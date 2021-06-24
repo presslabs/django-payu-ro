@@ -21,7 +21,6 @@ from datetime import datetime
 import pytz
 
 from django.http import HttpResponse
-from django.utils.six import text_type
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -39,16 +38,16 @@ def ipn(request):
     form_data = request.POST
     ipn_form = PayUIPNForm(form_data)
 
-    validation_hash = text_type()
+    validation_hash = ""
     for field in PAYU_IPN_FIELDS:
         if field not in request.POST:
             continue
 
         field_value = request.POST.getlist(field)
 
-        validation_hash += text_type().join(
-            [text_type('{length}{value}').format(
-                length=len(text_type(value).encode('utf-8')), value=value
+        validation_hash += "".join(
+            ['{length}{value}'.format(
+                length=len(value.encode('utf-8')), value=value
             ) for value in field_value]
         )
 

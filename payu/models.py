@@ -24,7 +24,6 @@ import requests
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.six import text_type
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
@@ -341,7 +340,7 @@ class PayUIDN(models.Model):
             self.success = response.status_code == 200
             self.response = response.content
         except Exception as e:
-            self.response = text_type(e)
+            self.response = str(e)
             self.success = False
 
         self.sent = True
@@ -354,9 +353,9 @@ class PayUIDN(models.Model):
 
         hash_values = [payload[field] for field in hashable_fields if field in payload]
 
-        confirmation_hash = text_type().join(
-            [text_type('{length}{value}').format(
-                    length=len(text_type(value).encode('utf-8')), value=value
+        confirmation_hash = "".join(
+            ['{length}{value}'.format(
+                    length=len(str(value).encode('utf-8')), value=value
             ) for value in hash_values]
         ).encode('utf-8')
         return hmac.new(merchant_key, confirmation_hash, hashlib.md5).hexdigest()
