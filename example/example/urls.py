@@ -13,29 +13,29 @@
 # limitations under the License.
 
 from django.views.generic import TemplateView
-from django.conf.urls import include, url
+from django.conf.urls import include, re_path
 from django.contrib import admin
 
 from example.demo import views as demo
 
 
 urlpatterns = [
-    url(r'^$', TemplateView.as_view(template_name="home.html")),
-    url(r'^admin/', include(admin.site.urls)),
+    re_path(r'^$', TemplateView.as_view(template_name="home.html")),
+    re_path(r'^admin/', include(admin.site.urls)),
 ]
 
 urlpatterns += [
-    url(r'^live-update/$', view=demo.live_update, name='live_update'),
-    url(r'^obtain-ipn-token/$', view=demo.obtain_ipn_token,
+    re_path(r'^live-update/$', view=demo.live_update, name='live_update'),
+    re_path(r'^obtain-ipn-token/$', view=demo.obtain_ipn_token,
         name='obtain_ipn_token'),
-    url(r'^alu-payments/', view=demo.ALUPayments.as_view(),
+    re_path(r'^alu-payments/', view=demo.ALUPayments.as_view(),
         name='alu_payments'),
-    url(r'^token-payments/', view=demo.TokenPayments.as_view(),
+    re_path(r'^token-payments/', view=demo.TokenPayments.as_view(),
         name='token_payments'),
-    url(r'^debug/', view=demo.debug,
+    re_path(r'^debug/', view=demo.debug,
         name='debug')
 ]
 
 urlpatterns += [
-    url(r'^payu/', include('payu.urls')),
+    re_path(r'^payu/', include('payu.urls')),
 ]

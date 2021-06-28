@@ -68,17 +68,22 @@ def test_payu_model_flagged_signals(mock_flagged):
 
 
 @pytest.mark.parametrize('payload, merchant_key, signature', [
-    ({'a': '1'}, '1', '1be4474db26a37bd5660ca396b5a9160'),
-    ({}, '0', '477f91ddbcc6839b9950045977da3530'),
-    ({'MERCHANT': '1', 'ORDER_REF': 1, 'ORDER_AMOUNT': 1, 'ORDER_CURRENCY': 'RON'},
-     '0', 'f05323c0b185b5264c49c8bae8ffc2d1'),
-])
+    (
+        {}, b'0', '477f91ddbcc6839b9950045977da3530'
+    ), (
+        # example from payu docs (with actually wrong hash)
+        # check online: source b"8MERCHANT73954142539.993USD192015-05-11 14:32:08"
+        #               key b"1231234567890123"
+        {'MERCHANT': 'MERCHANT', 'ORDER_REF': 3954142, 'ORDER_AMOUNT': 39.99,
+         'ORDER_CURRENCY': 'USD', 'IDN_DATE': '2015-05-11 14:32:08'},
+        b'1231234567890123', 'e40a3d1505cbb15e34cf35f34c784bb0'
+)])
 def test_idn_signature(payload, merchant_key, signature):
     assert PayUIDN.signature(payload, merchant_key) == signature
 
 
 @pytest.mark.parametrize('payu_idn, merchant, merchant_key, now, expected_payload', [
-    (PayUIPN(REFNO=1, IPN_TOTALGENERAL=1, CURRENCY='USD'), '123', '1', 1,
+    (PayUIPN(REFNO=1, IPN_TOTALGENERAL=1, CURRENCY='USD'), '123', b'1', 1,
      {
          'MERCHANT': '123',
          'ORDER_REF': 1,
@@ -87,7 +92,7 @@ def test_idn_signature(payload, merchant_key, signature):
          'IDN_DATE': 1,
          'ORDER_HASH': '5d275f182089bab5a5351613067b95dc'
      }),
-    (PayUIPN(), '123', '1', 1,
+    (PayUIPN(), '123', b'1', 1,
      {
          'MERCHANT': '123',
          'ORDER_REF': -1,

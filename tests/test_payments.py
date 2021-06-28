@@ -40,7 +40,7 @@ from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
         "DELIVERY_LNAME": "Doe",
         "DELIVERY_PHONE": "0243236298",
         "EXTERNAL_REF": "25787sa1"
-    }, "123", "c6d24967498508cbfeefa26095613716"),
+    }, b"123", "c6d24967498508cbfeefa26095613716"),
     ({
         "AMOUNT": 1,
         "CURRENCY": "RON",
@@ -49,18 +49,18 @@ from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
         "DELIVERY_CITY": "Suceava",
         "DELIVERY_EMAIL": "john@doe.com",
         "EXTERNAL_REF": "25787sa1"
-    }, "-1", "e3103c723372424b2b8292bbf6fcb436"),
+    }, b"-1", "e3103c723372424b2b8292bbf6fcb436"),
     ({
          "AMOUNT": 1,
          "CURRENCY": "MXN",
          "BILL_EMAIL": "juan@jose.com",
          "BILL_LNAME": "Jose",
-         "DELIVERY_CITY": "Ciudad de México".decode('utf-8'),
+         "DELIVERY_CITY": "Ciudad de México",
          "EXTERNAL_REF": "25787sa1"
-     }, "-1", "0c79288878d66cd85c02c09664547625"),
+     }, b"-1", "0c79288878d66cd85c02c09664547625"),
     ({
         "AMOUNT": 1,
-    }, "", "bef91610dda7aabfe371623edb399f3e")
+    }, b"", "bef91610dda7aabfe371623edb399f3e")
 ])
 def test_payment_signature(order, key, signature):
     assert TokenPayment.get_signature(order, key) == signature
@@ -82,7 +82,7 @@ def test_token_pay(mocked_requests):
 
 @patch('payu.payments.datetime')
 def test_token_build_payload(mocked_datetime):
-    payment = TokenPayment({"AMOUNT": 1}, "token", "key", "test")
+    payment = TokenPayment({"AMOUNT": 1}, "token", b"key", "test")
 
     mocked_datetime.now.return_value = MagicMock(strftime=MagicMock(return_value="now"))
     assert payment._build_payload() == {
@@ -124,7 +124,7 @@ def test_alutoken_build_payload():
                     'VAT':'20'
                 }
             ],
-        }, "token", "key", "test")
+        }, "token", b"key", "test")
 
     assert payment._build_payload() == {
         'AMOUNT': 1,

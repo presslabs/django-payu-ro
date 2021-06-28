@@ -14,12 +14,12 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+import hashlib
 import re
 import hmac
 from datetime import datetime
 
 from django import forms
-from django.utils.six import text_type
 
 from payu.models import PayUIPN
 from payu.conf import (PAYU_MERCHANT, PAYU_MERCHANT_KEY, PAYU_TEST_TRANSACTION,
@@ -48,17 +48,18 @@ class ValueHiddenInput(forms.HiddenInput):
         context['widget']['name'] = self._get_name(context['widget']['name'])
         return context
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, *args, **kwargs):
         if value is None:
-            return text_type()
+            return ""
 
         name = self._get_name(name)
 
-        return super(ValueHiddenInput, self).render(name, value or "", attrs)
+        return super(ValueHiddenInput, self).render(name, value or "", *args, **kwargs)
 
 
 class OrderWidget(forms.MultiWidget):
-    def __init__(self, attrs={}, *args, **kwargs):
+    def __init__(self, attrs=None, *args, **kwargs):
+        attrs = attrs or {}
         all_widgets = [ValueHiddenInput(attrs) for _ in PAYU_ORDER_DETAILS]
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
@@ -181,12 +182,12 @@ class PayULiveUpdateForm(forms.Form):
                            'DESTINATION_CITY', 'DESTINATION_STATE',
                            'DESTINATION_COUNTRY', 'PAY_METHOD',
                            'SELECTED_INSTALLMENTS_NO', 'TESTORDER']
-        result = text_type()
+        result = ""
 
         # We need this hack since payU is not consistent
         # with the order of fields in hash string
 
-        suffix = text_type()
+        suffix = ""
         for field in self:
             if field.name == 'ORDER_HASH':
                 continue
@@ -194,8 +195,8 @@ class PayULiveUpdateForm(forms.Form):
             field_value = field.value()
 
             if field.name in hashable_fields and field_value:
-                encoded_value = text_type('{length}{value}').format(
-                    length=len(text_type(field_value).encode('utf-8')), value=field_value
+                encoded_value = '{length}{value}'.format(
+                    length=len(str(field_value).encode('utf-8')), value=field_value
                 )
                 if field.name == 'TESTORDER' or \
                     field.name == 'SELECTED_INSTALLMENTS_NO':
@@ -211,8 +212,8 @@ class PayULiveUpdateForm(forms.Form):
                         for order in field_value:
                             value = order.get(detail, '')
 
-                            item = text_type('{length}{value}').format(
-                                length=len(text_type(value).encode('utf-8')), value=value
+                            item = '{length}{value}'.format(
+                                length=len(str(value).encode('utf-8')), value=value
                             )
 
                             if detail == 'PRICE_TYPE':
@@ -222,7 +223,7 @@ class PayULiveUpdateForm(forms.Form):
 
         result += suffix
         result = result.encode('utf-8')
-        return hmac.new(PAYU_MERCHANT_KEY, result).hexdigest()
+        return hmac.new(PAYU_MERCHANT_KEY, result, hashlib.md5).hexdigest()
 
     def _prepare_orders(self, orders):
         """

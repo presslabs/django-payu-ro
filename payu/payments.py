@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import hashlib
 import hmac
 from datetime import datetime
 
 import requests
-
-from django.utils.six import text_type
 
 from payu.conf import (PAYU_MERCHANT_KEY, PAYU_MERCHANT,
                        PAYU_ALU_URL, PAYU_TOKENS_URL)
@@ -38,12 +36,12 @@ class BasePayment(object):
     @classmethod
     def get_signature(self, payload, merchant_key):
         sorted_payload = sorted(payload.items(), key=lambda item: item[0])
-        parameters = text_type().join(
-            [text_type('{length}{value}').format(
-                length=len(text_type(parameter[1]).encode('utf-8')), value=parameter[1]
+        parameters = "".join(
+            ['{length}{value}'.format(
+                length=len(str(parameter[1]).encode('utf-8')), value=parameter[1]
             ) for parameter in sorted_payload]
         ).encode('utf-8')
-        return hmac.new(merchant_key, parameters).hexdigest()
+        return hmac.new(merchant_key, parameters, hashlib.md5).hexdigest()
 
 
 class TokenPayment(BasePayment):
@@ -99,7 +97,7 @@ class ALUPayment(BasePayment):
         return payload
 
     def _parse_orders(self, orders):
-        """
+        r"""
         Transform orders from list objects to PHP arrays:
             [
                 {
@@ -162,7 +160,7 @@ class ALUPayment(BasePayment):
         result = {}
 
         for index, order in enumerate(orders):
-            for detail, value in order.iteritems():
+            for detail, value in order.items():
                 result["ORDER_%s[%s]" % (detail, index)] = value
 
         return result

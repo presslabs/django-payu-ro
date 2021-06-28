@@ -13,6 +13,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
+import hashlib
 import hmac
 from datetime import datetime
 from collections import OrderedDict
@@ -23,7 +24,6 @@ import requests
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.six import text_type
 
 from payu.signals import (payment_completed, payment_authorized,
                           payment_flagged, alu_token_created)
@@ -321,7 +321,7 @@ class PayUIPN(models.Model):
 
 
 class PayUIDN(models.Model):
-    ipn = models.OneToOneField(PayUIPN)
+    ipn = models.OneToOneField(PayUIPN, on_delete=models.CASCADE)
     sent = models.BooleanField(default=False)
 
     success = models.BooleanField(default=False)
@@ -340,7 +340,7 @@ class PayUIDN(models.Model):
             self.success = response.status_code == 200
             self.response = response.content
         except Exception as e:
-            self.response = text_type(e)
+            self.response = str(e)
             self.success = False
 
         self.sent = True
@@ -348,12 +348,17 @@ class PayUIDN(models.Model):
 
     @classmethod
     def signature(cls, payload, merchant_key):
-        confirmation_hash = text_type().join(
-            [text_type('{length}{value}').format(
-                    length=len(text_type(value).encode('utf-8')), value=value
-            ) for value in payload.values()]
+        hashable_fields = ["MERCHANT", "ORDER_REF", "ORDER_AMOUNT", "ORDER_CURRENCY", "IDN_DATE",
+                           "CHARGE_AMOUNT"]
+
+        hash_values = [payload[field] for field in hashable_fields if field in payload]
+
+        confirmation_hash = "".join(
+            ['{length}{value}'.format(
+                    length=len(str(value).encode('utf-8')), value=value
+            ) for value in hash_values]
         ).encode('utf-8')
-        return hmac.new(merchant_key, confirmation_hash).hexdigest()
+        return hmac.new(merchant_key, confirmation_hash, hashlib.md5).hexdigest()
 
     def _build_payload(self, merchant, merchant_key, now=None):
         payload = OrderedDict([
@@ -372,7 +377,7 @@ class PayUIDN(models.Model):
 
 
 class PayUToken(models.Model):
-    ipn = models.OneToOneField(PayUIPN)
+    ipn = models.OneToOneField(PayUIPN, on_delete=models.CASCADE)
 
     # used for token/v1 api payments (same value as IPN's REFNO)
     # DEPRECATED
