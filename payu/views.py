@@ -98,7 +98,7 @@ def ipn(request):
     PayUIDN.objects.create(ipn=ipn_obj)
 
     # Send confirmation to PayU that we received this request
-    date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S').encode('utf-8')
+    date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
 
     confirmation_hash = b""
     for field in ["IPN_PID[]", "IPN_PNAME[]", "IPN_DATE"]:
@@ -110,6 +110,6 @@ def ipn(request):
             confirmation_hash += field_value
 
     confirmation_hash = hmac.new(PAYU_MERCHANT_KEY,
-                                 b'%s14%s' % (confirmation_hash, date),
+                                 b'%s14%s' % (confirmation_hash, date.encode('utf-8')),
                                  hashlib.md5).hexdigest()
     return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))

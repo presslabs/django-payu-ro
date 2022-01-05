@@ -16,6 +16,7 @@ import pytest
 
 from django.test import Client
 from django.urls import reverse
+from freezegun import freeze_time
 
 from payu.models import PayUIPN
 
@@ -34,6 +35,7 @@ def test_ipn_view_methods_access(method, status_code):
 
 
 @pytest.mark.django_db
+@freeze_time("2022-01-05 11:49:52")
 def test_ipn_view_valid_payload():
     post_data = {
         'HASH': '30dcbb067e28aee6cfefbf45e9285d7b',
@@ -46,7 +48,7 @@ def test_ipn_view_valid_payload():
     client = Client()
 
     response = client.post(reverse('payu-ipn'), post_data)
-    assert b'EPAYMENT' in response.content
+    assert response.content == b'<EPAYMENT>20220105114952|2988b8b159454b1ed380abe25e557c9e</EPAYMENT>'
 
     ipn = PayUIPN.objects.filter(REFNO=post_data['REFNO']).first()
     assert ipn
