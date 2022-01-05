@@ -1,3 +1,7 @@
+=== 1.4.2 ===
+- Fix IPN confirmation response.
+- Added back GET method to IPN view as a no-op, since it is used for checking the endpoint by PayU.
+
 === 1.4.1 ===
 - Added missing migrations.
 

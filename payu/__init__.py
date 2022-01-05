@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2016 PressLabs SRL
+# Copyright 2012-2021 PressLabs SRL
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -15,4 +15,4 @@
 #
 
 __author__ = 'Presslabs'
-__version__ = '1.4.1'
+__version__ = '1.4.2'
