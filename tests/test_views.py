@@ -23,7 +23,7 @@ from payu.models import PayUIPN
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('method, status_code', [
-    ('get', 405),
+    ('get', 200),
     ("post", 200),
     ('put', 405),
     ('patch', 405),

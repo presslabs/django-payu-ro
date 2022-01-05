@@ -30,8 +30,11 @@ from payu.forms import PayUIPNForm
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["POST", "GET"])
 def ipn(request):
+    if request.method == "GET":
+        return HttpResponse()
+
     ipn_obj = None
     error = None
 
