@@ -66,14 +66,24 @@ class TokenPayment(BasePayment):
 
 
 class ALUPayment(BasePayment):
-    def __init__(self, *args, **kwargs):
-        self.stored_credentials_use_type = kwargs.pop("stored_credentials_use_type", None)
-        self.threeds_data = kwargs.pop("threeds_data", {})
+    def __init__(
+        self,
+        order,
+        token,
+        stored_credentials_use_type=None,
+        threeds_data: dict = None,
+        **kwargs
+    ):
+        self.stored_credentials_use_type = stored_credentials_use_type
+        self.threeds_data = threeds_data or {}
 
-        super(ALUPayment, self).__init__(*args, **kwargs)
+        super(ALUPayment, self).__init__(order, token, **kwargs)
 
     def pay(self):
-        return requests.post(PAYU_ALU_URL, data=self._build_payload()).content
+        self._request = self._build_payload()
+        self._response = requests.post(PAYU_ALU_URL, data=self._request).content
+
+        return self._response
 
     def _build_payload(self):
         order = self.order
@@ -87,9 +97,9 @@ class ALUPayment(BasePayment):
             payload["CC_CVV"] = ""
             payload["STORED_CREDENTIALS_USE_TYPE"] = self.stored_credentials_use_type
 
-            if isinstance(self.threeds_data, dict):
-                payload['STRONG_CUSTOMER_AUTHENTICATION'] = "YES" if self.threeds_data else "NO"
-                payload.update(self.threeds_data)
+        if self.threeds_data and isinstance(self.threeds_data, dict):
+            payload["STRONG_CUSTOMER_AUTHENTICATION"] = "YES"
+            payload.update(self.threeds_data)
 
         payload.update(**order)
         payload["ORDER_HASH"] = ALUPayment.get_signature(payload, self.merchant_key)

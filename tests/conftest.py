@@ -26,6 +26,10 @@ settings.configure(
             "ENGINE": "django.db.backends.sqlite3",
         }
     },
+    PAYU_CALLBACK_URL="https://test.com",
+    PAYU_LU_URL="https://test.com",
+    PAYU_ALU_URL="https://test.com",
+    PAYU_IDN_URL="https://test.com",
     PAYU_MERCHANT="PAYUDEMO",
     PAYU_KEY="1231234567890123",
     INSTALLED_APPS=(

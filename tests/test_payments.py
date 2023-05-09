@@ -16,9 +16,13 @@
 
 
 import pytest
+import responses
+from django.conf import settings
 from mock import patch, MagicMock
 
 from freezegun import freeze_time
+from responses import matchers
+
 from payu.payments import TokenPayment, ALUPayment
 from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
 
@@ -115,17 +119,54 @@ def test_token_build_payload(mocked_datetime):
     }
 
 
-@patch('payu.payments.requests')
-def test_alu_token_pay(mocked_requests):
-    payment = ALUPayment("", "")
+def test_alu_token_pay():
+    payment = ALUPayment(order="", token="")
     payment._build_payload = MagicMock(return_value="expected_payload")
 
-    expected_response = "ok"
-    mocked_requests.post.return_value = MagicMock(content=expected_response)
+    response = b"ok"
+    responses.add(
+        responses.POST,
+        settings.PAYU_CALLBACK_URL,
+        body=response,
+        status=200,
+        match=[
+            lambda request: (request.body == "expected_payload", "body needs to match"),
+        ],
+    )
 
-    assert payment.pay() == expected_response
-    mocked_requests.post.assert_called_once_with(PAYU_ALU_URL,
-                                                 data="expected_payload")
+    assert payment.pay() == response
+
+
+def test_alu_token_pay_authorization_declined():
+    payment = ALUPayment(order="", token="")
+    payment._build_payload = MagicMock(return_value="expected_payload")
+
+    response = b"""
+    <?xml version="1.0"?>
+    <EPAYMENT>
+        <REFNO>6468866</REFNO>
+        <ALIAS></ALIAS>
+        <STATUS>FAILED</STATUS>
+        <RETURN_CODE>AUTHORIZATION_FAILED</RETURN_CODE>
+        <RETURN_MESSAGE>Authorization declined</RETURN_MESSAGE>
+        <DATE>2013-02-27 17:55:16</DATE>
+        <ORDER_REF>7308</ORDER_REF>
+        <AUTH_CODE>449322</AUTH_CODE>
+        <HASH>b0fb097ecb973316b2740192b655f41e</HASH>
+    </EPAYMENT>
+    """
+
+    responses.add(
+        responses.POST,
+        settings.PAYU_ALU_URL,
+        body=response,
+        status=200,
+        match=[
+            lambda request: (request.body == "expected_payload", "body needs to match"),
+        ],
+    )
+
+    assert payment.pay() == response
 
 
 @freeze_time("2020-06-30 11:49:52")
