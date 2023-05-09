@@ -22,11 +22,18 @@ from datetime import datetime
 from django import forms
 
 from payu.models import PayUIPN
-from payu.conf import (PAYU_MERCHANT, PAYU_MERCHANT_KEY, PAYU_TEST_TRANSACTION,
-                       PAYU_ORDER_DETAILS, PAYU_ORDER_DETAILS_DEFAULTS,
-                       PAYU_DATE_FORMATS, PAYU_CURRENCIES,
-                       PAYU_PAYMENT_METHODS, PAYU_LANGUAGES,
-                       PAYU_LU_CALLBACK)
+from payu.conf import (
+    PAYU_MERCHANT,
+    PAYU_MERCHANT_KEY,
+    PAYU_TEST_TRANSACTION,
+    PAYU_ORDER_DETAILS,
+    PAYU_ORDER_DETAILS_DEFAULTS,
+    PAYU_DATE_FORMATS,
+    PAYU_CURRENCIES,
+    PAYU_PAYMENT_METHODS,
+    PAYU_LANGUAGES,
+    PAYU_LU_CALLBACK,
+)
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -35,17 +42,17 @@ class ValueHiddenInput(forms.HiddenInput):
     Used to remove unused fields from PayU buttons.
     """
 
-    template_name = 'custom_hidden.html'
+    template_name = "custom_hidden.html"
 
     def _get_name(self, name):
-        detail = re.match(r'^ORDER_(\d+)_(\d+)$', name)
+        detail = re.match(r"^ORDER_(\d+)_(\d+)$", name)
         if detail and int(detail.group(2)) < len(PAYU_ORDER_DETAILS):
-            name = 'ORDER_%s[]' % PAYU_ORDER_DETAILS[int(detail.group(2))]
+            name = "ORDER_%s[]" % PAYU_ORDER_DETAILS[int(detail.group(2))]
         return name
 
     def get_context(self, name, value, attrs):
         context = super(ValueHiddenInput, self).get_context(name, value, attrs)
-        context['widget']['name'] = self._get_name(context['widget']['name'])
+        context["widget"]["name"] = self._get_name(context["widget"]["name"])
         return context
 
     def render(self, name, value, *args, **kwargs):
@@ -64,7 +71,7 @@ class OrderWidget(forms.MultiWidget):
         super(OrderWidget, self).__init__(all_widgets, *args, **kwargs)
 
     def decompress(self, value):
-        return [value.get(detail, '') for detail in PAYU_ORDER_DETAILS]
+        return [value.get(detail, "") for detail in PAYU_ORDER_DETAILS]
 
 
 class OrderField(forms.MultiValueField):
@@ -85,8 +92,8 @@ class OrdersWidget(forms.MultiWidget):
 
 class OrdersField(forms.MultiValueField):
     def __init__(self, *args, **kwargs):
-        products = kwargs.get('initial', [])
-        kwargs['label'] = ''
+        products = kwargs.get("initial", [])
+        kwargs["label"] = ""
 
         all_fields = tuple()
         if products:
@@ -96,29 +103,30 @@ class OrdersField(forms.MultiValueField):
 
 
 class PayULiveUpdateForm(forms.Form):
-    MERCHANT = forms.CharField(widget=ValueHiddenInput,
-                               initial=PAYU_MERCHANT)
-    LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial='')
-    LU_TOKEN_TYPE = forms.CharField(widget=ValueHiddenInput, initial='')
-    ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial='')
-    ORDER_DATE = forms.CharField(widget=ValueHiddenInput,
-                                 initial=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    MERCHANT = forms.CharField(widget=ValueHiddenInput, initial=PAYU_MERCHANT)
+    LU_ENABLE_TOKEN = forms.CharField(widget=ValueHiddenInput, initial="")
+    LU_TOKEN_TYPE = forms.CharField(widget=ValueHiddenInput, initial="")
+    ORDER_REF = forms.CharField(widget=ValueHiddenInput, initial="")
+    ORDER_DATE = forms.CharField(
+        widget=ValueHiddenInput, initial=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    )
 
     ORDER = OrdersField()
     ORDER_SHIPPING = forms.CharField(widget=ValueHiddenInput)
-    PRICES_CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,
-                                        choices=PAYU_CURRENCIES, initial='USD')
+    PRICES_CURRENCY = forms.ChoiceField(
+        widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial="USD"
+    )
     DISCOUNT = forms.CharField(widget=ValueHiddenInput)
 
     DESTINATION_CITY = forms.CharField(widget=ValueHiddenInput)
     DESTINATION_STATE = forms.CharField(widget=ValueHiddenInput)
     DESTINATION_COUNTRY = forms.CharField(widget=ValueHiddenInput)
 
-    PAY_METHOD = forms.ChoiceField(widget=ValueHiddenInput,
-                                   choices=PAYU_PAYMENT_METHODS)
+    PAY_METHOD = forms.ChoiceField(
+        widget=ValueHiddenInput, choices=PAYU_PAYMENT_METHODS
+    )
 
-    ORDER_HASH = forms.CharField(widget=ValueHiddenInput,
-                                 initial='')
+    ORDER_HASH = forms.CharField(widget=ValueHiddenInput, initial="")
 
     BILL_FNAME = forms.CharField(widget=ValueHiddenInput)
     BILL_LNAME = forms.CharField(widget=ValueHiddenInput)
@@ -129,17 +137,18 @@ class PayULiveUpdateForm(forms.Form):
     BILL_COMPANY = forms.CharField(widget=ValueHiddenInput)
     BILL_FISCALCODE = forms.CharField(widget=ValueHiddenInput)
 
-    CURRENCY = forms.ChoiceField(widget=ValueHiddenInput,
-                                 choices=PAYU_CURRENCIES, initial='USD')
-    AUTOMODE = forms.CharField(widget=ValueHiddenInput,
-                               initial='1')
-    LANGUAGE = forms.ChoiceField(widget=ValueHiddenInput,
-                                 choices=PAYU_LANGUAGES, initial='EN')
+    CURRENCY = forms.ChoiceField(
+        widget=ValueHiddenInput, choices=PAYU_CURRENCIES, initial="USD"
+    )
+    AUTOMODE = forms.CharField(widget=ValueHiddenInput, initial="1")
+    LANGUAGE = forms.ChoiceField(
+        widget=ValueHiddenInput, choices=PAYU_LANGUAGES, initial="EN"
+    )
     SELECTED_INSTALLMENTS_NO = forms.CharField(widget=ValueHiddenInput)
-    BACK_REF = forms.CharField(widget=ValueHiddenInput,
-                               initial=PAYU_LU_CALLBACK)
-    TESTORDER = forms.CharField(widget=ValueHiddenInput,
-                                initial=str(PAYU_TEST_TRANSACTION).upper())
+    BACK_REF = forms.CharField(widget=ValueHiddenInput, initial=PAYU_LU_CALLBACK)
+    TESTORDER = forms.CharField(
+        widget=ValueHiddenInput, initial=str(PAYU_TEST_TRANSACTION).upper()
+    )
 
     @property
     def signature(self):
@@ -177,11 +186,20 @@ class PayULiveUpdateForm(forms.Form):
         Using this string and the MERCHANT_KEY, we compute the HMAC.
         """
 
-        hashable_fields = ['MERCHANT', 'ORDER_REF', 'ORDER_DATE',
-                           'ORDER_SHIPPING', 'PRICES_CURRENCY', 'DISCOUNT',
-                           'DESTINATION_CITY', 'DESTINATION_STATE',
-                           'DESTINATION_COUNTRY', 'PAY_METHOD',
-                           'SELECTED_INSTALLMENTS_NO', 'TESTORDER']
+        hashable_fields = [
+            "MERCHANT",
+            "ORDER_REF",
+            "ORDER_DATE",
+            "ORDER_SHIPPING",
+            "PRICES_CURRENCY",
+            "DISCOUNT",
+            "DESTINATION_CITY",
+            "DESTINATION_STATE",
+            "DESTINATION_COUNTRY",
+            "PAY_METHOD",
+            "SELECTED_INSTALLMENTS_NO",
+            "TESTORDER",
+        ]
         result = ""
 
         # We need this hack since payU is not consistent
@@ -189,40 +207,42 @@ class PayULiveUpdateForm(forms.Form):
 
         suffix = ""
         for field in self:
-            if field.name == 'ORDER_HASH':
+            if field.name == "ORDER_HASH":
                 continue
 
             field_value = field.value()
 
             if field.name in hashable_fields and field_value:
-                encoded_value = '{length}{value}'.format(
-                    length=len(str(field_value).encode('utf-8')), value=field_value
+                encoded_value = "{length}{value}".format(
+                    length=len(str(field_value).encode("utf-8")), value=field_value
                 )
-                if field.name == 'TESTORDER' or \
-                    field.name == 'SELECTED_INSTALLMENTS_NO':
+                if (
+                    field.name == "TESTORDER"
+                    or field.name == "SELECTED_INSTALLMENTS_NO"
+                ):
                     suffix += encoded_value
                 else:
                     result += encoded_value
 
-            if field.name == 'ORDER':
+            if field.name == "ORDER":
                 for detail in PAYU_ORDER_DETAILS:
-                    if any([detail in order and order[detail]
-                            for order in field_value]):
-
+                    if any(
+                        [detail in order and order[detail] for order in field_value]
+                    ):
                         for order in field_value:
-                            value = order.get(detail, '')
+                            value = order.get(detail, "")
 
-                            item = '{length}{value}'.format(
-                                length=len(str(value).encode('utf-8')), value=value
+                            item = "{length}{value}".format(
+                                length=len(str(value).encode("utf-8")), value=value
                             )
 
-                            if detail == 'PRICE_TYPE':
+                            if detail == "PRICE_TYPE":
                                 suffix += item
                             else:
                                 result += item
 
         result += suffix
-        result = result.encode('utf-8')
+        result = result.encode("utf-8")
         return hmac.new(PAYU_MERCHANT_KEY, result, hashlib.md5).hexdigest()
 
     def _prepare_orders(self, orders):
@@ -239,13 +259,13 @@ class PayULiveUpdateForm(forms.Form):
         return orders
 
     def __init__(self, **kwargs):
-        initial = kwargs.get('initial', {})
-        orders = self._prepare_orders(initial.get('ORDER', []))
+        initial = kwargs.get("initial", {})
+        orders = self._prepare_orders(initial.get("ORDER", []))
 
         super(PayULiveUpdateForm, self).__init__(**kwargs)
 
-        self.fields['ORDER'] = OrdersField(initial=orders)
-        self.fields['ORDER_HASH'].initial = self.signature
+        self.fields["ORDER"] = OrdersField(initial=orders)
+        self.fields["ORDER_HASH"].initial = self.signature
 
 
 class PayUIPNForm(forms.ModelForm):
@@ -258,12 +278,11 @@ class PayUIPNForm(forms.ModelForm):
 
         for field in data:
             if field.endswith("[]"):
-                form_data[field[:-2]] = ",".join([value
-                                                  for value in data.getlist(field)
-                                                  if value.strip()
-                                                 ])
+                form_data[field[:-2]] = ",".join(
+                    [value for value in data.getlist(field) if value.strip()]
+                )
 
-            if field == 'IPN_DATE':
+            if field == "IPN_DATE":
                 form_data[field] = datetime.strptime(data[field], "%Y%m%d%H%M%S")
 
         super(PayUIPNForm, self).__init__(form_data)

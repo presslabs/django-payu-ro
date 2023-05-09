@@ -14,5 +14,5 @@
 #    limitations under the License.
 #
 
-__author__ = 'Presslabs'
-__version__ = '1.4.2'
+__author__ = "Presslabs"
+__version__ = "1.4.2"

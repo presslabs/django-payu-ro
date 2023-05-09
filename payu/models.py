@@ -25,218 +25,423 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from payu.signals import (payment_completed, payment_authorized,
-                          payment_flagged, alu_token_created)
-from payu.conf import (PAYU_PAYMENT_STATUS, PAYU_IDN_URL,
-                       PAYU_MERCHANT, PAYU_MERCHANT_KEY)
+from payu.signals import (
+    payment_completed,
+    payment_authorized,
+    payment_flagged,
+    alu_token_created,
+)
+from payu.conf import (
+    PAYU_PAYMENT_STATUS,
+    PAYU_IDN_URL,
+    PAYU_MERCHANT,
+    PAYU_MERCHANT_KEY,
+)
 
 
 class PayUIPN(models.Model):
-    REFNO = models.CharField(max_length=9, verbose_name='ePayment reference')
-    REFNOEXT = models.CharField(max_length=100, verbose_name='Merchant reference')
-    ORDERNO = models.CharField(max_length=6, verbose_name='Merchant order #')
-    ORDERSTATUS = models.CharField(max_length=18, choices=PAYU_PAYMENT_STATUS,
-                                   verbose_name='Status')
+    REFNO = models.CharField(max_length=9, verbose_name="ePayment reference")
+    REFNOEXT = models.CharField(max_length=100, verbose_name="Merchant reference")
+    ORDERNO = models.CharField(max_length=6, verbose_name="Merchant order #")
+    ORDERSTATUS = models.CharField(
+        max_length=18, choices=PAYU_PAYMENT_STATUS, verbose_name="Status"
+    )
     HASH = models.CharField(max_length=64)
-    PAYMETHOD_CODE = models.CharField(max_length=10,
-                                      verbose_name='Payment method code')
+    PAYMETHOD_CODE = models.CharField(max_length=10, verbose_name="Payment method code")
 
-    SALEDATE = models.DateTimeField(blank=True, null=True,
-                                    verbose_name='Sale date')
-    COMPLETE_DATE = models.DateTimeField(blank=True, null=True,
-                                         verbose_name='Complete date')
-    PAYMENTDATE = models.DateTimeField(blank=True, null=True,
-                                       verbose_name='Payment date')
+    SALEDATE = models.DateTimeField(blank=True, null=True, verbose_name="Sale date")
+    COMPLETE_DATE = models.DateTimeField(
+        blank=True, null=True, verbose_name="Complete date"
+    )
+    PAYMENTDATE = models.DateTimeField(
+        blank=True, null=True, verbose_name="Payment date"
+    )
 
-    PAYMETHOD = models.CharField(blank=True, null=True, max_length=100,
-                                 verbose_name='Payment method')
-    FIRSTNAME = models.CharField(blank=True, null=True, max_length=40,
-                                 help_text='Client\'s first name')
-    LASTNAME = models.CharField(blank=True, null=True, max_length=40,
-                                help_text='Client\'s last name')
-    IDENTITY_NO = models.CharField(blank=True, null=True, max_length=15,
-                                   help_text='Customer ID Card series and \
+    PAYMETHOD = models.CharField(
+        blank=True, null=True, max_length=100, verbose_name="Payment method"
+    )
+    FIRSTNAME = models.CharField(
+        blank=True, null=True, max_length=40, help_text="Client's first name"
+    )
+    LASTNAME = models.CharField(
+        blank=True, null=True, max_length=40, help_text="Client's last name"
+    )
+    IDENTITY_NO = models.CharField(
+        blank=True,
+        null=True,
+        max_length=15,
+        help_text="Customer ID Card series and \
                                    number (Series / Number - available \
-                                   only for Romanian customers)')
-    IDENTITY_ISSUER = models.CharField(blank=True, null=True, max_length=100,
-                                       help_text='IDENTITY_NO ID Card \
-                                       issuer authority ')
-    CARD_TYPE = models.CharField(blank=True, null=True, max_length=100,
-                                 help_text='Used credit card type. \
-                                 Ex: "Visa" or "MasterCard"')
-    IDENTITY_CNP = models.CharField(blank=True, null=True, max_length=13,
-                                    help_text='Customer\'s personal numeric \
-                                    code, available only for Romanian customers.')
-    COMPANY = models.CharField(blank=True, null=True, max_length=40,
-                               help_text='Company name (maximum length: \
-                                             40 characters) ')
-    REGISTRATIONNUMBER = models.CharField(blank=True, null=True, max_length=40,
-                                          help_text='Company\'s Commerce \
+                                   only for Romanian customers)",
+    )
+    IDENTITY_ISSUER = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="IDENTITY_NO ID Card \
+                                       issuer authority ",
+    )
+    CARD_TYPE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text='Used credit card type. \
+                                 Ex: "Visa" or "MasterCard"',
+    )
+    IDENTITY_CNP = models.CharField(
+        blank=True,
+        null=True,
+        max_length=13,
+        help_text="Customer's personal numeric \
+                                    code, available only for Romanian customers.",
+    )
+    COMPANY = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Company name (maximum length: \
+                                             40 characters) ",
+    )
+    REGISTRATIONNUMBER = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Company's Commerce \
                                           Registry registration number \
-                                          (maximum length: 40 characters)')
-    FISCALCODE = models.CharField(blank=True, null=True, max_length=40,
-                                  help_text='Unique Registration Number / \
-                                  VAT ID (maximum length: 40 characters)')
-    CBANKNAME = models.CharField(blank=True, null=True, max_length=40,
-                                 help_text='Company\'s Bank (maximum \
-                                 length: 40 characters) ')
-    CBANKACCOUNT = models.CharField(blank=True, null=True, max_length=50,
-                                    help_text='Company\'s Bank Account \
-                                    (maximum length: 50 characters)')
-    ADDRESS1 = models.CharField(blank=True, null=True, max_length=100,
-                                help_text='Address (maximum length: 100 \
-                                characters)')
-    ADDRESS2 = models.CharField(blank=True, null=True, max_length=100,
-                                help_text='Additional Address info \
-                                (maximum length: 100 characters)')
-    CITY = models.CharField(blank=True, null=True, max_length=30,
-                            help_text='City (maximum length: 30 characters)')
-    STATE = models.CharField(blank=True, null=True, max_length=30,
-                             help_text='State/Sector/County (maximum \
-                             length: 30 characters)')
-    ZIPCODE = models.CharField(blank=True, null=True, max_length=20,
-                               help_text='ZIP/Postal Code (maximum length: \
-                               20 characters)')
-    COUNTRY = models.CharField(blank=True, null=True, max_length=50,
-                               help_text='Country (maximum length: 50 \
-                               characters)')
-    COUNTRY_CODE = models.CharField(blank=True, null=True, max_length=10,
-                                    help_text='Country (maximum length: 10 \
-                                    characters)')
-    PHONE = models.CharField(blank=True, null=True, max_length=40,
-                             help_text='Phone number (maximum length: 40 \
-                             characters)')
-    FAX = models.CharField(blank=True, null=True, max_length=40,
-                           help_text='Fax number (maximum length: 40 \
-                           characters)')
-    CUSTOMEREMAIL = models.CharField(blank=True, null=True, max_length=40,
-                                     help_text='Customer\'s e-mail address \
-                                     (maximum length: 40 characters)')
-    FIRSTNAME_D = models.CharField(blank=True, null=True, max_length=40,
-                                   help_text='First name (maximum length: \
-                                   40 characters) ')
-    LASTAME_D = models.CharField(blank=True, null=True, max_length=40,
-                                 help_text='Last Name (maximum length: 40 \
-                                 characters)')
-    COMPANY_D = models.CharField(blank=True, null=True, max_length=50,
-                                 help_text='Company (maximum length: 50 \
-                                 characters)')
-    ADDRESS1_D = models.CharField(blank=True, null=True, max_length=100,
-                                  help_text='Address (maximum length: 100 \
-                                  characters)')
-    ADDRESS2_D = models.CharField(blank=True, null=True, max_length=100,
-                                  help_text='Additional address info \
-                                  (maximum length: 100 characters)')
-    CITY_D = models.CharField(blank=True, null=True, max_length=30,
-                              help_text='City (maximum length: 30 \
-                              characters)')
-    STATE_D = models.CharField(blank=True, null=True, max_length=30,
-                               help_text='State/Sector/County (maximum \
-                               length: 30 characters)')
-    ZIPCODE_D = models.CharField(blank=True, null=True, max_length=20,
-                                 help_text='ZIP/Postal Code (maximum \
-                                 length: 20 characters)')
-    COUNTRY_D = models.CharField(blank=True, null=True, max_length=50,
-                                 help_text='Country (maximum length: 50 \
-                                 characters)')
-    COUNTRY_D_CODE = models.CharField(blank=True, null=True, max_length=10,
-                                      help_text='Country (maximum length: \
-                                      10 characters)')
-    PHONE_D = models.CharField(blank=True, null=True, max_length=40,
-                               help_text='Phone number (maximum length: 40 \
-                               characters)')
-    EMAIL_D = models.CharField(blank=True, null=True, max_length=40,
-                               help_text='E-mail (maximum length: 40 \
-                               characters)')
-    IPADDRESS = models.CharField(blank=True, null=True, max_length=250,
-                                 help_text='Client\'s IP Address (maximum \
-                                 length: 250 characters)')
-    IPCOUNTRY = models.CharField(blank=True, null=True, max_length=50,
-                                 help_text='Client\'s IP Country (maximum \
-                                 length: 50 characters)')
-    COMPLETE_DATE = models.CharField(blank=True, null=True, max_length=40,
-                                     help_text='The order completion date, \
+                                          (maximum length: 40 characters)",
+    )
+    FISCALCODE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Unique Registration Number / \
+                                  VAT ID (maximum length: 40 characters)",
+    )
+    CBANKNAME = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Company's Bank (maximum \
+                                 length: 40 characters) ",
+    )
+    CBANKACCOUNT = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Company's Bank Account \
+                                    (maximum length: 50 characters)",
+    )
+    ADDRESS1 = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Address (maximum length: 100 \
+                                characters)",
+    )
+    ADDRESS2 = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Additional Address info \
+                                (maximum length: 100 characters)",
+    )
+    CITY = models.CharField(
+        blank=True,
+        null=True,
+        max_length=30,
+        help_text="City (maximum length: 30 characters)",
+    )
+    STATE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=30,
+        help_text="State/Sector/County (maximum \
+                             length: 30 characters)",
+    )
+    ZIPCODE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=20,
+        help_text="ZIP/Postal Code (maximum length: \
+                               20 characters)",
+    )
+    COUNTRY = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Country (maximum length: 50 \
+                               characters)",
+    )
+    COUNTRY_CODE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=10,
+        help_text="Country (maximum length: 10 \
+                                    characters)",
+    )
+    PHONE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Phone number (maximum length: 40 \
+                             characters)",
+    )
+    FAX = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Fax number (maximum length: 40 \
+                           characters)",
+    )
+    CUSTOMEREMAIL = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Customer's e-mail address \
+                                     (maximum length: 40 characters)",
+    )
+    FIRSTNAME_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="First name (maximum length: \
+                                   40 characters) ",
+    )
+    LASTAME_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Last Name (maximum length: 40 \
+                                 characters)",
+    )
+    COMPANY_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Company (maximum length: 50 \
+                                 characters)",
+    )
+    ADDRESS1_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Address (maximum length: 100 \
+                                  characters)",
+    )
+    ADDRESS2_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text="Additional address info \
+                                  (maximum length: 100 characters)",
+    )
+    CITY_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=30,
+        help_text="City (maximum length: 30 \
+                              characters)",
+    )
+    STATE_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=30,
+        help_text="State/Sector/County (maximum \
+                               length: 30 characters)",
+    )
+    ZIPCODE_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=20,
+        help_text="ZIP/Postal Code (maximum \
+                                 length: 20 characters)",
+    )
+    COUNTRY_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Country (maximum length: 50 \
+                                 characters)",
+    )
+    COUNTRY_D_CODE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=10,
+        help_text="Country (maximum length: \
+                                      10 characters)",
+    )
+    PHONE_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Phone number (maximum length: 40 \
+                               characters)",
+    )
+    EMAIL_D = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="E-mail (maximum length: 40 \
+                               characters)",
+    )
+    IPADDRESS = models.CharField(
+        blank=True,
+        null=True,
+        max_length=250,
+        help_text="Client's IP Address (maximum \
+                                 length: 250 characters)",
+    )
+    IPCOUNTRY = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Client's IP Country (maximum \
+                                 length: 50 characters)",
+    )
+    COMPLETE_DATE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="The order completion date, \
                                      in the following format: Y-m-d H:i:s \
-                                     (2012-04-26 15:02:28) .')
-    CURRENCY = models.CharField(blank=True, null=True, max_length=10,
-                                help_text='The currency in which the order \
+                                     (2012-04-26 15:02:28) .",
+    )
+    CURRENCY = models.CharField(
+        blank=True,
+        null=True,
+        max_length=10,
+        help_text="The currency in which the order \
                                 has been processed. Possible values: RON, \
-                                USD, EUR.')
-    LANGUAGE = models.CharField(blank=True, null=True, max_length=40,
-                                help_text='The language in which the order \
+                                USD, EUR.",
+    )
+    LANGUAGE = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="The language in which the order \
                                 has been processed. Possible values: ro, \
-                                en, fr, de, it.')
+                                en, fr, de, it.",
+    )
 
-    IPN_PID = models.TextField(blank=True, null=True,
-                               help_text='Array with the ID Codes of the \
+    IPN_PID = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the ID Codes of the \
                                ordered products, in the PayU database (PayU \
-                               reference) ')
-    IPN_PNAME = models.TextField(blank=True, null=True,
-                                 help_text='Array with product names ')
-    IPN_PCODE = models.TextField(blank=True, null=True,
-                                 help_text='Array with the product codes \
+                               reference) ",
+    )
+    IPN_PNAME = models.TextField(
+        blank=True, null=True, help_text="Array with product names "
+    )
+    IPN_PCODE = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the product codes \
                                  assigned by the vendor in the system (vendor \
-                                 reference)')
-    IPN_INFO = models.TextField(blank=True, null=True,
-                                help_text='Array with additional \
+                                 reference)",
+    )
+    IPN_INFO = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with additional \
                                 information sent for each ordered product (if \
-                                they have been sent to PayU)')
-    IPN_QTY = models.TextField(blank=True, null=True,
-                               help_text='Array with the product quantities')
-    IPN_PRICE = models.TextField(blank=True, null=True,
-                                 help_text='Array with unit prices per \
+                                they have been sent to PayU)",
+    )
+    IPN_QTY = models.TextField(
+        blank=True, null=True, help_text="Array with the product quantities"
+    )
+    IPN_PRICE = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with unit prices per \
                                  product (without VAT), in RON, with \
                                  period/full-stop (.) as decimal place \
-                                 separator')
-    IPN_VAT = models.TextField(blank=True, null=True,
-                               help_text='Array with VAT values per \
+                                 separator",
+    )
+    IPN_VAT = models.TextField(
+        blank=True,
+        null=True,
+        help_text='Array with VAT values per \
                                product, with period "." as decimal place \
-                               separator')
-    IPN_VER = models.TextField(blank=True, null=True,
-                               help_text='Array with product versions \
-                               (maximum length: 50 characters)')
-    IPN_DISCOUNT = models.TextField(blank=True, null=True,
-                                    help_text='Array with the amounts with \
+                               separator',
+    )
+    IPN_VER = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with product versions \
+                               (maximum length: 50 characters)",
+    )
+    IPN_DISCOUNT = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the amounts with \
                                     which there has been made a discount \
-                                    in a promotion. Including VAT. ')
-    IPN_PROMONAME = models.TextField(blank=True, null=True,
-                                     help_text='Array with the names of the \
+                                    in a promotion. Including VAT. ",
+    )
+    IPN_PROMONAME = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the names of the \
                                      promotions in which the discounts \
-                                     specified above have been made.')
-    IPN_PROMOCODE = models.TextField(blank=True, null=True,
-                                     help_text='Array with the code of the \
+                                     specified above have been made.",
+    )
+    IPN_PROMOCODE = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the code of the \
                                      promotions in which the discounts \
-                                     specified above have been made.')
-    IPN_ORDER_COSTS = models.TextField(blank=True, null=True,
-                                       help_text='Array with costs for each \
+                                     specified above have been made.",
+    )
+    IPN_ORDER_COSTS = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with costs for each \
                                        product from order (expressed in \
-                                       order\'s currency)')
-    IPN_REC_CURRENT_ITERATION_NO = models.TextField(blank=True, null=True,
-                                                    help_text='Current recurring \
+                                       order's currency)",
+    )
+    IPN_REC_CURRENT_ITERATION_NO = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Current recurring \
                                                                   period (avaible \
                                                                   only for recurrent \
-                                                                  payments)')
-    IPN_REC_ORIGINAL_REFNO = models.TextField(blank=True, null=True,
-                                              help_text='Array containing \
+                                                                  payments)",
+    )
+    IPN_REC_ORIGINAL_REFNO = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array containing \
                                                             the reference to \
-                                                            the original order')
-    IPN_REC_INTERVAL = models.TextField(blank=True, null=True,
-                                        help_text='Array containing \
+                                                            the original order",
+    )
+    IPN_REC_INTERVAL = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array containing \
                                                       recurring intervals \
                                                       (day/month/week) for \
-                                                      each order')
-    IPN_REC_EXPIRATION_DATE = models.TextField(blank=True, null=True,
-                                               help_text='Array with \
+                                                      each order",
+    )
+    IPN_REC_EXPIRATION_DATE = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with \
                                                              expiration dates \
                                                              for each \
-                                                             recurrence')
-    IPN_REC_MULTIPLIER = models.TextField(blank=True, null=True,
-                                          help_text='Array with reccurence \
+                                                             recurrence",
+    )
+    IPN_REC_MULTIPLIER = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with reccurence \
                                                         period (interval x \
                                                         multiplier) for each \
-                                                        product from the order')
-    IPN_DELIVEREDCODES = models.TextField(blank=True, null=True,
-                                          help_text='Array with the codes \
+                                                        product from the order",
+    )
+    IPN_DELIVEREDCODES = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Array with the codes \
                                                         delivered to the \
                                                         clients, if the PayU \
                                                         contract contains this \
@@ -248,43 +453,72 @@ class PayUIPN(models.Model):
                                                         each sent code, in \
                                                         case the ordered \
                                                         quantity is greater \
-                                                        than 1.')
-    IPN_DOWNLOAD_LINK = models.CharField(blank=True, null=True, max_length=250,
-                                         help_text='Download link of the \
+                                                        than 1.",
+    )
+    IPN_DOWNLOAD_LINK = models.CharField(
+        blank=True,
+        null=True,
+        max_length=250,
+        help_text="Download link of the \
                                                        product delivered to \
-                                                       the client')
-    IPN_TOTAL = models.TextField(blank=True, null=True,
-                                 help_text='Partial total on order line \
+                                                       the client",
+    )
+    IPN_TOTAL = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Partial total on order line \
                                                (including VAT), with \
                                                period/full-stop (.) as a \
-                                               decimal place separator')
-    IPN_TOTALGENERAL = models.CharField(blank=True, null=True, max_length=40,
-                                        help_text='Total transaction \
+                                               decimal place separator",
+    )
+    IPN_TOTALGENERAL = models.CharField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="Total transaction \
                                                       amount, including VAT \
                                                       costs, with \
                                                       period/full-stop (.) as \
                                                       a decimal place \
-                                                      separator')
-    IPN_SHIPPING = models.CharField(blank=True, null=True, max_length=50,
-                                    help_text='Total amount paid for \
-                                                  shippment')
-    IPN_REFERRER = models.CharField(blank=True, null=True, max_length=250,
-                                    help_text='HTTP referrer of the sale.')
-    IPN_GLOBALDISCOUNT = models.CharField(blank=True, null=True, max_length=250,
-                                          help_text='Global discount of the \
+                                                      separator",
+    )
+    IPN_SHIPPING = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Total amount paid for \
+                                                  shippment",
+    )
+    IPN_REFERRER = models.CharField(
+        blank=True, null=True, max_length=250, help_text="HTTP referrer of the sale."
+    )
+    IPN_GLOBALDISCOUNT = models.CharField(
+        blank=True,
+        null=True,
+        max_length=250,
+        help_text="Global discount of the \
                                                         sale. This field is \
                                                         option and is avaible \
                                                         only if the amount is \
-                                                        greater than zero.')
-    IPN_COMMISSION = models.CharField(blank=True, null=True, max_length=50,
-                                      help_text='Payu\'s commision in RON, \
+                                                        greater than zero.",
+    )
+    IPN_COMMISSION = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="Payu's commision in RON, \
                                                     with period/full-stop (.) \
                                                     as a decimal place \
-                                                    separator.')
-    IPN_DATE = models.DateTimeField(blank=True, null=True, max_length=40,
-                                    help_text='IPN POST\'s sending date in the \
+                                                    separator.",
+    )
+    IPN_DATE = models.DateTimeField(
+        blank=True,
+        null=True,
+        max_length=40,
+        help_text="IPN POST's sending date in the \
                                                following format: YmdHMS (ex.: \
-                                               20120426145935)')
+                                               20120426145935)",
+    )
 
     response = models.TextField(blank=True)
     ip_address = models.GenericIPAddressField(blank=True, null=True)
@@ -305,19 +539,19 @@ class PayUIPN(models.Model):
 
     @property
     def is_authorized(self):
-        return self.ORDERSTATUS in ['PAYMENT_AUTHORIZED', 'PAYMENT_RECEIVED', 'TEST']
+        return self.ORDERSTATUS in ["PAYMENT_AUTHORIZED", "PAYMENT_RECEIVED", "TEST"]
 
     @property
     def is_completed(self):
-        return self.ORDERSTATUS == 'COMPLETE'
+        return self.ORDERSTATUS == "COMPLETE"
 
     def __unicode__(self):
-        return u'<IPN: %s>' % self.REFNO
+        return "<IPN: %s>" % self.REFNO
 
     class Meta:
-        verbose_name = 'PayU IPN'
-        db_table = 'payu_ipn'
-        app_label = 'payu'
+        verbose_name = "PayU IPN"
+        db_table = "payu_ipn"
+        app_label = "payu"
 
 
 class PayUIDN(models.Model):
@@ -328,8 +562,8 @@ class PayUIDN(models.Model):
     response = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = 'PayU IDN'
-        app_label = 'payu'
+        verbose_name = "PayU IDN"
+        app_label = "payu"
 
     def send(self):
         payload = self._build_payload(PAYU_MERCHANT, PAYU_MERCHANT_KEY)
@@ -348,32 +582,46 @@ class PayUIDN(models.Model):
 
     @classmethod
     def signature(cls, payload, merchant_key):
-        hashable_fields = ["MERCHANT", "ORDER_REF", "ORDER_AMOUNT", "ORDER_CURRENCY", "IDN_DATE",
-                           "CHARGE_AMOUNT"]
+        hashable_fields = [
+            "MERCHANT",
+            "ORDER_REF",
+            "ORDER_AMOUNT",
+            "ORDER_CURRENCY",
+            "IDN_DATE",
+            "CHARGE_AMOUNT",
+        ]
 
         hash_values = [payload[field] for field in hashable_fields if field in payload]
 
         confirmation_hash = "".join(
-            ['{length}{value}'.format(
-                    length=len(str(value).encode('utf-8')), value=value
-            ) for value in hash_values]
-        ).encode('utf-8')
+            [
+                "{length}{value}".format(
+                    length=len(str(value).encode("utf-8")), value=value
+                )
+                for value in hash_values
+            ]
+        ).encode("utf-8")
         return hmac.new(merchant_key, confirmation_hash, hashlib.md5).hexdigest()
 
     def _build_payload(self, merchant, merchant_key, now=None):
-        payload = OrderedDict([
-            ('MERCHANT', merchant),
-            ('ORDER_REF', self.ipn.REFNO or -1),
-            ('ORDER_AMOUNT', self.ipn.IPN_TOTALGENERAL or 0),
-            ('ORDER_CURRENCY', self.ipn.CURRENCY or 'RON'),
-            ('IDN_DATE', now or datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')),
-        ])
+        payload = OrderedDict(
+            [
+                ("MERCHANT", merchant),
+                ("ORDER_REF", self.ipn.REFNO or -1),
+                ("ORDER_AMOUNT", self.ipn.IPN_TOTALGENERAL or 0),
+                ("ORDER_CURRENCY", self.ipn.CURRENCY or "RON"),
+                (
+                    "IDN_DATE",
+                    now or datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S"),
+                ),
+            ]
+        )
         payload["ORDER_HASH"] = self.signature(payload, merchant_key)
 
         return payload
 
     def __unicode__(self):
-        return u'<IDN: %s>' % self.pk
+        return "<IDN: %s>" % self.pk
 
 
 class PayUToken(models.Model):
@@ -381,10 +629,14 @@ class PayUToken(models.Model):
 
     # used for token/v1 api payments (same value as IPN's REFNO)
     # DEPRECATED
-    IPN_CC_TOKEN = models.CharField(max_length=9, verbose_name="Token (deprecated)", blank=True, null=True)
+    IPN_CC_TOKEN = models.CharField(
+        max_length=9, verbose_name="Token (deprecated)", blank=True, null=True
+    )
 
     # can be used for the `IPN_CC_TOKEN` field in alu/v3 token payments
-    TOKEN_HASH = models.CharField(max_length=64, verbose_name="Token", blank=True, null=True)
+    TOKEN_HASH = models.CharField(
+        max_length=64, verbose_name="Token", blank=True, null=True
+    )
 
     # documentation is unclear of the length and format of this field
     IPN_CC_MASK = models.CharField(max_length=36, verbose_name="Last 4 digits")
@@ -392,11 +644,11 @@ class PayUToken(models.Model):
     IPN_CC_EXP_DATE = models.DateField(verbose_name="Expiration date")
 
     class Meta:
-        verbose_name = 'PayU Tokens'
-        app_label = 'payu'
+        verbose_name = "PayU Tokens"
+        app_label = "payu"
 
     def __unicode__(self):
-        return u'<Token: %s>' % (self.TOKEN_HASH or self.IPN_CC_TOKEN)
+        return "<Token: %s>" % (self.TOKEN_HASH or self.IPN_CC_TOKEN)
 
 
 @receiver(post_save, sender=PayUToken)

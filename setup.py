@@ -44,17 +44,19 @@ from setuptools import setup, find_packages
 
 import payu
 
-install_requires = [line.strip()
-                    for line in open("requirements.txt").readlines()
-                    if not line.strip().startswith('#') and line.strip()]
+install_requires = [
+    line.strip()
+    for line in open("requirements.txt").readlines()
+    if not line.strip().startswith("#") and line.strip()
+]
 
 setup(
-    name='django-payu-ro',
+    name="django-payu-ro",
     version=payu.__version__,
-    author='Presslabs SRL',
-    author_email='support@presslabs.com',
-    url='http://github.com/PressLabs/django-payu-ro',
-    description='A pluggable Django application for integrating PayU Payments (ex. ePayment)',
+    author="Presslabs SRL",
+    author_email="support@presslabs.com",
+    url="http://github.com/PressLabs/django-payu-ro",
+    description="A pluggable Django application for integrating PayU Payments (ex. ePayment)",
     packages=find_packages(),
     include_package_data=True,
     install_requires=install_requires,
@@ -63,6 +65,6 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
         "Operating System :: OS Independent",
-        "Topic :: Software Development"
+        "Topic :: Software Development",
     ],
 )

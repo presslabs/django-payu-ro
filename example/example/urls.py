@@ -20,22 +20,22 @@ from example.demo import views as demo
 
 
 urlpatterns = [
-    re_path(r'^$', TemplateView.as_view(template_name="home.html")),
-    re_path(r'^admin/', include(admin.site.urls)),
+    re_path(r"^$", TemplateView.as_view(template_name="home.html")),
+    re_path(r"^admin/", include(admin.site.urls)),
 ]
 
 urlpatterns += [
-    re_path(r'^live-update/$', view=demo.live_update, name='live_update'),
-    re_path(r'^obtain-ipn-token/$', view=demo.obtain_ipn_token,
-        name='obtain_ipn_token'),
-    re_path(r'^alu-payments/', view=demo.ALUPayments.as_view(),
-        name='alu_payments'),
-    re_path(r'^token-payments/', view=demo.TokenPayments.as_view(),
-        name='token_payments'),
-    re_path(r'^debug/', view=demo.debug,
-        name='debug')
+    re_path(r"^live-update/$", view=demo.live_update, name="live_update"),
+    re_path(
+        r"^obtain-ipn-token/$", view=demo.obtain_ipn_token, name="obtain_ipn_token"
+    ),
+    re_path(r"^alu-payments/", view=demo.ALUPayments.as_view(), name="alu_payments"),
+    re_path(
+        r"^token-payments/", view=demo.TokenPayments.as_view(), name="token_payments"
+    ),
+    re_path(r"^debug/", view=demo.debug, name="debug"),
 ]
 
 urlpatterns += [
-    re_path(r'^payu/', include('payu.urls')),
+    re_path(r"^payu/", include("payu.urls")),
 ]

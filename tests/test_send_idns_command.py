@@ -22,7 +22,7 @@ from payu.models import PayUIDN
 
 
 @pytest.mark.django_db
-@patch('payu.models.requests')
+@patch("payu.models.requests")
 def test_send_idn_payu(mocked_requests):
     mocked_requests.post().status_code = 200
     mocked_requests.post().content = "ok"
@@ -30,7 +30,7 @@ def test_send_idn_payu(mocked_requests):
     idns = [G(PayUIDN) for _ in range(4)]
 
     idns_args = [str(idn.pk) for idn in idns[:2]]
-    call_command('send_idns', '--idns=%s' % ','.join(idns_args))
+    call_command("send_idns", "--idns=%s" % ",".join(idns_args))
 
     for idn in idns[:2]:
         idn.refresh_from_db()
@@ -41,13 +41,13 @@ def test_send_idn_payu(mocked_requests):
 
 
 @pytest.mark.django_db
-@patch('payu.models.requests')
+@patch("payu.models.requests")
 def test_send_idn_payu_fail(mocked_requests):
     mocked_requests.post.side_effect = Exception("error")
 
     idn = G(PayUIDN)
 
-    call_command('send_idns')
+    call_command("send_idns")
 
     idn.refresh_from_db()
 

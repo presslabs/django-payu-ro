@@ -23,51 +23,70 @@ from payu.payments import TokenPayment, ALUPayment
 from payu.conf import PAYU_TOKENS_URL, PAYU_ALU_URL
 
 
-@pytest.mark.parametrize('order, key, signature', [
-    ({
-        "AMOUNT": 1,
-        "CURRENCY": "RON",
-        "BILL_ADDRESS": "address 1",
-        "BILL_CITY": "Iasi",
-        "BILL_EMAIL": "john@doe.com",
-        "BILL_FNAME": "John",
-        "BILL_LNAME": "Doe",
-        "BILL_PHONE": "0243236298",
-        "DELIVERY_ADDRESS": "address 2",
-        "DELIVERY_CITY": "Suceava",
-        "DELIVERY_EMAIL": "john@doe.com",
-        "DELIVERY_FNAME": "John",
-        "DELIVERY_LNAME": "Doe",
-        "DELIVERY_PHONE": "0243236298",
-        "EXTERNAL_REF": "25787sa1"
-    }, b"123", "c6d24967498508cbfeefa26095613716"),
-    ({
-        "AMOUNT": 1,
-        "CURRENCY": "RON",
-        "BILL_EMAIL": "john@doe.com",
-        "BILL_LNAME": "Doe",
-        "DELIVERY_CITY": "Suceava",
-        "DELIVERY_EMAIL": "john@doe.com",
-        "EXTERNAL_REF": "25787sa1"
-    }, b"-1", "e3103c723372424b2b8292bbf6fcb436"),
-    ({
-         "AMOUNT": 1,
-         "CURRENCY": "MXN",
-         "BILL_EMAIL": "juan@jose.com",
-         "BILL_LNAME": "Jose",
-         "DELIVERY_CITY": "Ciudad de México",
-         "EXTERNAL_REF": "25787sa1"
-     }, b"-1", "0c79288878d66cd85c02c09664547625"),
-    ({
-        "AMOUNT": 1,
-    }, b"", "bef91610dda7aabfe371623edb399f3e")
-])
+@pytest.mark.parametrize(
+    "order, key, signature",
+    [
+        (
+            {
+                "AMOUNT": 1,
+                "CURRENCY": "RON",
+                "BILL_ADDRESS": "address 1",
+                "BILL_CITY": "Iasi",
+                "BILL_EMAIL": "john@doe.com",
+                "BILL_FNAME": "John",
+                "BILL_LNAME": "Doe",
+                "BILL_PHONE": "0243236298",
+                "DELIVERY_ADDRESS": "address 2",
+                "DELIVERY_CITY": "Suceava",
+                "DELIVERY_EMAIL": "john@doe.com",
+                "DELIVERY_FNAME": "John",
+                "DELIVERY_LNAME": "Doe",
+                "DELIVERY_PHONE": "0243236298",
+                "EXTERNAL_REF": "25787sa1",
+            },
+            b"123",
+            "c6d24967498508cbfeefa26095613716",
+        ),
+        (
+            {
+                "AMOUNT": 1,
+                "CURRENCY": "RON",
+                "BILL_EMAIL": "john@doe.com",
+                "BILL_LNAME": "Doe",
+                "DELIVERY_CITY": "Suceava",
+                "DELIVERY_EMAIL": "john@doe.com",
+                "EXTERNAL_REF": "25787sa1",
+            },
+            b"-1",
+            "e3103c723372424b2b8292bbf6fcb436",
+        ),
+        (
+            {
+                "AMOUNT": 1,
+                "CURRENCY": "MXN",
+                "BILL_EMAIL": "juan@jose.com",
+                "BILL_LNAME": "Jose",
+                "DELIVERY_CITY": "Ciudad de México",
+                "EXTERNAL_REF": "25787sa1",
+            },
+            b"-1",
+            "0c79288878d66cd85c02c09664547625",
+        ),
+        (
+            {
+                "AMOUNT": 1,
+            },
+            b"",
+            "bef91610dda7aabfe371623edb399f3e",
+        ),
+    ],
+)
 def test_payment_signature(order, key, signature):
     assert TokenPayment.get_signature(order, key) == signature
     assert ALUPayment.get_signature(order, key) == signature
 
 
-@patch('payu.payments.requests')
+@patch("payu.payments.requests")
 def test_token_pay(mocked_requests):
     payment = TokenPayment("", "")
     payment._build_payload = MagicMock(return_value="expected_payload")
@@ -76,22 +95,23 @@ def test_token_pay(mocked_requests):
     mocked_requests.post.return_value = MagicMock(content=expected_response)
 
     assert payment.pay() == expected_response
-    mocked_requests.post.assert_called_once_with(PAYU_TOKENS_URL,
-                                                 data="expected_payload")
+    mocked_requests.post.assert_called_once_with(
+        PAYU_TOKENS_URL, data="expected_payload"
+    )
 
 
-@patch('payu.payments.datetime')
+@patch("payu.payments.datetime")
 def test_token_build_payload(mocked_datetime):
     payment = TokenPayment({"AMOUNT": 1}, "token", b"key", "test")
 
     mocked_datetime.now.return_value = MagicMock(strftime=MagicMock(return_value="now"))
     assert payment._build_payload() == {
-        'AMOUNT': 1,
-        'MERCHANT': 'test',
-        'METHOD': 'TOKEN_NEWSALE',
-        'REF_NO': 'token',
-        'SIGN': '4192969bae28a16ba4777354903f895a',
-        'TIMESTAMP': 'now'
+        "AMOUNT": 1,
+        "MERCHANT": "test",
+        "METHOD": "TOKEN_NEWSALE",
+        "REF_NO": "token",
+        "SIGN": "4192969bae28a16ba4777354903f895a",
+        "TIMESTAMP": "now",
     }
 
 
@@ -109,34 +129,38 @@ def test_alu_token_pay(mocked_requests):
 
 
 @freeze_time("2020-06-30 11:49:52")
-def test_alutoken_build_payload():
+def test_alu_token_build_payload():
     payment = ALUPayment(
-        {
+        order={
             "AMOUNT": 1,
             "ORDER": [
                 {
-                    'PNAME': 'CD Player',
-                    'PCODE': 'PROD_04891',
-                    'PINFO': 'Extended Warranty - 5 Years',
-                    'PRICE': '82.3',
-                    'PRICE_TYPE': 'GROSS',
-                    'QTY': '7',
-                    'VAT':'20'
+                    "PNAME": "CD Player",
+                    "PCODE": "PROD_04891",
+                    "PINFO": "Extended Warranty - 5 Years",
+                    "PRICE": "82.3",
+                    "PRICE_TYPE": "GROSS",
+                    "QTY": "7",
+                    "VAT": "20",
                 }
             ],
-        }, "token", b"key", "test")
+        },
+        token="token",
+        merchant_key=b"key",
+        merchant="test",
+    )
 
     assert payment._build_payload() == {
-        'AMOUNT': 1,
-        'MERCHANT': 'test',
-        'CC_TOKEN': 'token',
-        'ORDER_DATE': '2020-06-30 11:49:52',
-        'ORDER_HASH': 'a25afe5b6fd8246e7b8c8846535ba01b',
-        'ORDER_PCODE[0]': 'PROD_04891',
-        'ORDER_PINFO[0]': 'Extended Warranty - 5 Years',
-        'ORDER_PNAME[0]': 'CD Player',
-        'ORDER_PRICE[0]': '82.3',
-        'ORDER_PRICE_TYPE[0]': 'GROSS',
-        'ORDER_QTY[0]': '7',
-        'ORDER_VAT[0]': '20'
+        "AMOUNT": 1,
+        "MERCHANT": "test",
+        "CC_TOKEN": "token",
+        "ORDER_DATE": "2020-06-30 11:49:52",
+        "ORDER_HASH": "a25afe5b6fd8246e7b8c8846535ba01b",
+        "ORDER_PCODE[0]": "PROD_04891",
+        "ORDER_PINFO[0]": "Extended Warranty - 5 Years",
+        "ORDER_PNAME[0]": "CD Player",
+        "ORDER_PRICE[0]": "82.3",
+        "ORDER_PRICE_TYPE[0]": "GROSS",
+        "ORDER_QTY[0]": "7",
+        "ORDER_VAT[0]": "20",
     }

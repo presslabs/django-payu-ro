@@ -17,14 +17,13 @@ from datetime import datetime
 
 import requests
 
-from payu.conf import (PAYU_MERCHANT_KEY, PAYU_MERCHANT,
-                       PAYU_ALU_URL, PAYU_TOKENS_URL)
+from payu.conf import PAYU_MERCHANT_KEY, PAYU_MERCHANT, PAYU_ALU_URL, PAYU_TOKENS_URL
 
 
 class BasePayment(object):
-    def __init__(self, order, token, merchant_key=PAYU_MERCHANT_KEY,
-                 merchant=PAYU_MERCHANT):
-
+    def __init__(
+        self, order, token, merchant_key=PAYU_MERCHANT_KEY, merchant=PAYU_MERCHANT
+    ):
         self.order = order
         self.token = token
         self.merchant_key = merchant_key
@@ -37,29 +36,31 @@ class BasePayment(object):
     def get_signature(self, payload, merchant_key):
         sorted_payload = sorted(payload.items(), key=lambda item: item[0])
         parameters = "".join(
-            ['{length}{value}'.format(
-                length=len(str(parameter[1]).encode('utf-8')), value=parameter[1]
-            ) for parameter in sorted_payload]
-        ).encode('utf-8')
+            [
+                "{length}{value}".format(
+                    length=len(str(parameter[1]).encode("utf-8")), value=parameter[1]
+                )
+                for parameter in sorted_payload
+            ]
+        ).encode("utf-8")
         return hmac.new(merchant_key, parameters, hashlib.md5).hexdigest()
 
 
 class TokenPayment(BasePayment):
     def pay(self):
-        return requests.post(PAYU_TOKENS_URL,
-                             data=self._build_payload()).content
+        return requests.post(PAYU_TOKENS_URL, data=self._build_payload()).content
 
     def _build_payload(self):
         payload = {
-            'REF_NO': self.token,
-            'METHOD': 'TOKEN_NEWSALE',
-            'MERCHANT': self.merchant,
-            'TIMESTAMP': datetime.now().strftime("%Y%m%d%H%M%S"),
+            "REF_NO": self.token,
+            "METHOD": "TOKEN_NEWSALE",
+            "MERCHANT": self.merchant,
+            "TIMESTAMP": datetime.now().strftime("%Y%m%d%H%M%S"),
         }
 
         payload.update(self.order)
 
-        payload['SIGN'] = self.get_signature(payload, self.merchant_key)
+        payload["SIGN"] = self.get_signature(payload, self.merchant_key)
 
         return payload
 
@@ -78,21 +79,20 @@ class ALUPayment(BasePayment):
         order = self.order
         order["MERCHANT"] = self.merchant
         if not order.get("ORDER_DATE"):
-            order["ORDER_DATE"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            order["ORDER_DATE"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        payload = self._parse_orders(order.pop('ORDER'))
-        payload['CC_TOKEN'] = self.token
-        if self.stored_credentials_use_type and payload['CC_TOKEN']:
-            payload['CC_CVV'] = ""
-            payload['STORED_CREDENTIALS_USE_TYPE'] = self.stored_credentials_use_type
+        payload = self._parse_orders(order.pop("ORDER"))
+        payload["CC_TOKEN"] = self.token
+        if self.stored_credentials_use_type and payload["CC_TOKEN"]:
+            payload["CC_CVV"] = ""
+            payload["STORED_CREDENTIALS_USE_TYPE"] = self.stored_credentials_use_type
 
             if isinstance(self.threeds_data, dict):
                 payload['STRONG_CUSTOMER_AUTHENTICATION'] = "YES" if self.threeds_data else "NO"
                 payload.update(self.threeds_data)
 
         payload.update(**order)
-        payload["ORDER_HASH"] = ALUPayment.get_signature(payload,
-                                                         self.merchant_key)
+        payload["ORDER_HASH"] = ALUPayment.get_signature(payload, self.merchant_key)
 
         return payload
 

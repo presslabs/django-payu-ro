@@ -49,18 +49,21 @@ def ipn(request):
         field_value = request.POST.getlist(field)
 
         validation_hash += "".join(
-            ['{length}{value}'.format(
-                length=len(value.encode('utf-8')), value=value
-            ) for value in field_value]
+            [
+                "{length}{value}".format(length=len(value.encode("utf-8")), value=value)
+                for value in field_value
+            ]
         )
 
-    validation_hash = validation_hash.encode('utf-8')
+    validation_hash = validation_hash.encode("utf-8")
 
-    expected_hash = hmac.new(PAYU_MERCHANT_KEY, validation_hash, hashlib.md5).hexdigest()
-    request_hash = request.POST.get('HASH', '')
+    expected_hash = hmac.new(
+        PAYU_MERCHANT_KEY, validation_hash, hashlib.md5
+    ).hexdigest()
+    request_hash = request.POST.get("HASH", "")
 
     if request_hash != expected_hash:
-        error = 'Invalid hash %s. Hash string \n%s' % (request_hash, expected_hash)
+        error = "Invalid hash %s. Hash string \n%s" % (request_hash, expected_hash)
     else:
         if ipn_form.is_valid():
             try:
@@ -75,7 +78,7 @@ def ipn(request):
 
     # Set query params and sender's IP address
     ipn_obj.response = getattr(request, request.method).urlencode()
-    ipn_obj.ip_address = request.META.get('REMOTE_ADDR', '')
+    ipn_obj.ip_address = request.META.get("REMOTE_ADDR", "")
 
     if error:
         # We save errors in the error field
@@ -84,10 +87,10 @@ def ipn(request):
     ipn_obj.save()
 
     # Check for a token in the request and save it if found
-    IPN_CC_TOKEN = request.POST.get('IPN_CC_TOKEN')
-    TOKEN_HASH = request.POST.get('TOKEN_HASH')
-    IPN_CC_MASK = request.POST.get('IPN_CC_MASK')
-    IPN_CC_EXP_DATE = request.POST.get('IPN_CC_EXP_DATE')
+    IPN_CC_TOKEN = request.POST.get("IPN_CC_TOKEN")
+    TOKEN_HASH = request.POST.get("TOKEN_HASH")
+    IPN_CC_MASK = request.POST.get("IPN_CC_MASK")
+    IPN_CC_EXP_DATE = request.POST.get("IPN_CC_EXP_DATE")
 
     if all([(IPN_CC_TOKEN or TOKEN_HASH), IPN_CC_MASK, IPN_CC_EXP_DATE]):
         PayUToken.objects.create(
@@ -95,13 +98,13 @@ def ipn(request):
             IPN_CC_MASK=IPN_CC_MASK,
             IPN_CC_EXP_DATE=IPN_CC_EXP_DATE,
             TOKEN_HASH=TOKEN_HASH,
-            ipn=ipn_obj
+            ipn=ipn_obj,
         )
 
     PayUIDN.objects.create(ipn=ipn_obj)
 
     # Send confirmation to PayU that we received this request
-    date = datetime.now(pytz.UTC).strftime('%Y%m%d%H%M%S')
+    date = datetime.now(pytz.UTC).strftime("%Y%m%d%H%M%S")
 
     confirmation_hash = b""
     for field in ["IPN_PID[]", "IPN_PNAME[]", "IPN_DATE"]:
@@ -112,7 +115,9 @@ def ipn(request):
         else:
             confirmation_hash += field_value
 
-    confirmation_hash = hmac.new(PAYU_MERCHANT_KEY,
-                                 b'%s14%s' % (confirmation_hash, date.encode('utf-8')),
-                                 hashlib.md5).hexdigest()
-    return HttpResponse('<EPAYMENT>%s|%s</EPAYMENT>' % (date, confirmation_hash))
+    confirmation_hash = hmac.new(
+        PAYU_MERCHANT_KEY,
+        b"%s14%s" % (confirmation_hash, date.encode("utf-8")),
+        hashlib.md5,
+    ).hexdigest()
+    return HttpResponse("<EPAYMENT>%s|%s</EPAYMENT>" % (date, confirmation_hash))

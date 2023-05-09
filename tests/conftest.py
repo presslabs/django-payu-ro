@@ -20,20 +20,22 @@ from django.conf import settings
 
 settings.configure(
     DEBUG=True,
-    ROOT_URLCONF='payu.urls',
+    ROOT_URLCONF="payu.urls",
     DATABASES={
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
         }
     },
-    PAYU_MERCHANT='PAYUDEMO',
-    PAYU_KEY='1231234567890123',
-    INSTALLED_APPS=('django.contrib.auth',
-                    'django.contrib.contenttypes',
-                    'django.contrib.sessions',
-                    'django.contrib.admin',
-                    'payu',),
-    SECRET_KEY='dummy'
+    PAYU_MERCHANT="PAYUDEMO",
+    PAYU_KEY="1231234567890123",
+    INSTALLED_APPS=(
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.admin",
+        "payu",
+    ),
+    SECRET_KEY="dummy",
 )
 
 

@@ -6,15 +6,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payu', '0001_initial'),
+        ("payu", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payutoken',
-            name='TOKEN_HASH',
-            field=models.CharField(blank=True, max_length=64, null=True, verbose_name=b'Token Hash'),
+            model_name="payutoken",
+            name="TOKEN_HASH",
+            field=models.CharField(
+                blank=True, max_length=64, null=True, verbose_name=b"Token Hash"
+            ),
         ),
     ]

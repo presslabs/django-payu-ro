@@ -6,24 +6,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payu', '0002_payutoken_token_hash'),
+        ("payu", "0002_payutoken_token_hash"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='payutoken',
-            options={'verbose_name': 'PayU Tokens'},
+            name="payutoken",
+            options={"verbose_name": "PayU Tokens"},
         ),
         migrations.AlterField(
-            model_name='payutoken',
-            name='IPN_CC_TOKEN',
-            field=models.CharField(blank=True, max_length=9, null=True, verbose_name=b'Token (deprecated)'),
+            model_name="payutoken",
+            name="IPN_CC_TOKEN",
+            field=models.CharField(
+                blank=True, max_length=9, null=True, verbose_name=b"Token (deprecated)"
+            ),
         ),
         migrations.AlterField(
-            model_name='payutoken',
-            name='TOKEN_HASH',
-            field=models.CharField(blank=True, max_length=64, null=True, verbose_name=b'Token'),
+            model_name="payutoken",
+            name="TOKEN_HASH",
+            field=models.CharField(
+                blank=True, max_length=64, null=True, verbose_name=b"Token"
+            ),
         ),
     ]

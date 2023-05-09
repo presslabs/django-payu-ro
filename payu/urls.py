@@ -19,5 +19,5 @@ from django.conf.urls import re_path
 from .views import ipn
 
 urlpatterns = [
-    re_path(r'^ipn/$', ipn, name='payu-ipn'),
+    re_path(r"^ipn/$", ipn, name="payu-ipn"),
 ]

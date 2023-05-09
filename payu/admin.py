@@ -19,18 +19,29 @@ from payu.models import PayUIPN, PayUToken, PayUIDN
 
 
 class PayUIPNAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'REFNOEXT', 'ORDERSTATUS', 'flag',
-                    'flag_info', 'created_at')
-    list_filter = ('ORDERSTATUS', 'flag')
+    list_display = (
+        "__unicode__",
+        "REFNOEXT",
+        "ORDERSTATUS",
+        "flag",
+        "flag_info",
+        "created_at",
+    )
+    list_filter = ("ORDERSTATUS", "flag")
 
 
 class PayUTokenAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'ipn', 'IPN_CC_TOKEN', 'IPN_CC_MASK',
-                    'IPN_CC_EXP_DATE')
+    list_display = (
+        "__unicode__",
+        "ipn",
+        "IPN_CC_TOKEN",
+        "IPN_CC_MASK",
+        "IPN_CC_EXP_DATE",
+    )
 
 
 class PayUIDNAdmin(admin.ModelAdmin):
-    list_display = ('ipn', 'sent', 'success')
+    list_display = ("ipn", "sent", "success")
 
 
 admin.site.register(PayUIPN, PayUIPNAdmin)
