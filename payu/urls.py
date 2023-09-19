@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2016 PressLabs SRL
+# Copyright 2012-2023 PressLabs SRL
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 #    limitations under the License.
 #
 
-from django.conf.urls import re_path
+from django.urls import path
 
 from .views import ipn
 
 urlpatterns = [
-    re_path(r"^ipn/$", ipn, name="payu-ipn"),
+    path(r"ipn/", ipn, name="payu-ipn"),
 ]

@@ -18,7 +18,6 @@ import hmac
 from datetime import datetime
 from collections import OrderedDict
 
-import pytz
 import requests
 
 from django.db import models
@@ -612,7 +611,7 @@ class PayUIDN(models.Model):
                 ("ORDER_CURRENCY", self.ipn.CURRENCY or "RON"),
                 (
                     "IDN_DATE",
-                    now or datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S"),
+                    now or datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                 ),
             ]
         )

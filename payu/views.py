@@ -18,8 +18,6 @@ import hmac
 import hashlib
 from datetime import datetime
 
-import pytz
-
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -104,7 +102,7 @@ def ipn(request):
     PayUIDN.objects.create(ipn=ipn_obj)
 
     # Send confirmation to PayU that we received this request
-    date = datetime.now(pytz.UTC).strftime("%Y%m%d%H%M%S")
+    date = datetime.utcnow().strftime("%Y%m%d%H%M%S")
 
     confirmation_hash = b""
     for field in ["IPN_PID[]", "IPN_PNAME[]", "IPN_DATE"]:

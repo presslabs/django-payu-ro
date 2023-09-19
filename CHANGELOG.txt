@@ -1,3 +1,10 @@
+=== 1.6.0 ===
+- Require Django>=3.2,<5.0 and remove pytz dependency
+- Python 3.11 is supported, while older versions become unsupported (although they might still work)
+
+=== 1.5.0 ===
+- Send 3DS data when available (regardless whether the payment results in a token or not).
+
 === 1.4.2 ===
 - Fix IPN confirmation response.
 - Added back GET method to IPN view as a no-op, since it is used for checking the endpoint by PayU.

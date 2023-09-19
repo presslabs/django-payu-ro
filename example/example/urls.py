@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from django.views.generic import TemplateView
-from django.conf.urls import include, re_path
+from django.conf.urls import include
 from django.contrib import admin
+from django.urls import re_path
 
 from example.demo import views as demo
 
